@@ -99,6 +99,10 @@ void CPlantsCEDlg::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_SlotSel10, m_comboSlot10);
     DDX_Control(pDX, IDC_FullScreenExplosion, m_checkFullScreenExplode);
     DDX_Control(pDX, IDC_ZombiesALLGo, m_checkZombiesAllOut);
+    DDX_Control(pDX, IDC_PotatoMineNoCD, m_checkPotatoMineNoCD);
+    DDX_Control(pDX, IDC_EatZombiesNoCD, m_checkChomperNoCD);
+    DDX_Control(pDX, IDC_PlantInfiniteHP, m_checkPlantInfiniteHP);
+    DDX_Control(pDX, IDC_MushroomFrozen, m_checkIceMushroomFreeze);
     
 }
 
@@ -130,6 +134,10 @@ BEGIN_MESSAGE_MAP(CPlantsCEDlg, CDialogEx)
     ON_CBN_SELCHANGE(IDC_SlotSel10, &CPlantsCEDlg::OnCbnSelchangeSlotsel10)
     ON_BN_CLICKED(IDC_FullScreenExplosion, &CPlantsCEDlg::OnBnClickedFullscreenexplosion)
     ON_BN_CLICKED(IDC_ZombiesALLGo, &CPlantsCEDlg::OnBnClickedZombiesallgo)
+    ON_BN_CLICKED(IDC_PotatoMineNoCD, &CPlantsCEDlg::OnBnClickedPotatominenocd)
+    ON_BN_CLICKED(IDC_EatZombiesNoCD, &CPlantsCEDlg::OnBnClickedEatzombiesnocd)
+    ON_BN_CLICKED(IDC_PlantInfiniteHP, &CPlantsCEDlg::OnBnClickedPlantinfinitehp)
+    ON_BN_CLICKED(IDC_MushroomFrozen, &CPlantsCEDlg::OnBnClickedMushroomfrozen)
 END_MESSAGE_MAP()
 
 
@@ -280,6 +288,34 @@ BOOL CPlantsCEDlg::OnInitDialog()
     m_dwZombiesAllOutAllocated = 0;
     m_bZombiesAllOutMemoryAllocated = FALSE;
 
+    // 初始化土豆地雷无CD复选框
+    m_checkPotatoMineNoCD.SetCheck(BST_UNCHECKED);
+    m_bPotatoMineNoCDEnabled = FALSE;
+    m_dwPotatoMineNoCDAddress = 0;
+    m_dwPotatoMineNoCDAllocated = 0;
+    m_bPotatoMineNoCDMemoryAllocated = FALSE;
+
+    // 初始化食人花无CD复选框
+    m_checkChomperNoCD.SetCheck(BST_UNCHECKED);
+    m_bChomperNoCDEnabled = FALSE;
+    m_dwChomperNoCDAddress = 0;
+    m_dwChomperNoCDAllocated = 0;
+    m_bChomperNoCDMemoryAllocated = FALSE;
+
+    // 初始化植物无限血复选框
+    m_checkPlantInfiniteHP.SetCheck(BST_UNCHECKED);
+    m_bPlantInfiniteHPEnabled = FALSE;
+    m_dwPlantInfiniteHPAddress = 0;
+    m_dwPlantInfiniteHPAllocated = 0;
+    m_bPlantInfiniteHPMemoryAllocated = FALSE;
+
+    // 初始化寒冰菇一直冰冻复选框
+    m_checkIceMushroomFreeze.SetCheck(BST_UNCHECKED);
+    m_bIceMushroomFreezeEnabled = FALSE;
+    m_dwIceMushroomFreezeAddress = 0;
+    m_dwIceMushroomFreezeAllocated = 0;
+    m_bIceMushroomFreezeMemoryAllocated = FALSE;
+
 	AddLog(_T("植物大战僵尸阳光修改器启动"));
     AddLog(_T("配置文件路径: %s"), m_strIniPath);
     AddLog(_T("默认进程: %s"), m_strProcessName);
@@ -296,6 +332,14 @@ BOOL CPlantsCEDlg::OnInitDialog()
     AddLog(_T("全屏爆炸3地址偏移: 0x%X"), EXPLODE3_OFFSET);
     AddLog(_T("僵尸全部出动功能已加载"));
     AddLog(_T("僵尸全部出动地址偏移: 0x%X"), ZOMBIES_ALL_OUT_OFFSET);
+    AddLog(_T("土豆地雷无CD功能已加载"));
+    AddLog(_T("土豆地雷无CD地址偏移: 0x%X"), POTATO_MINE_NO_CD_OFFSET);
+    AddLog(_T("食人花无CD功能已加载"));
+    AddLog(_T("食人花无CD地址偏移: 0x%X"), CHOMPER_NO_CD_OFFSET);
+    AddLog(_T("植物无限血功能已加载"));
+    AddLog(_T("植物无限血地址偏移: 0x%X"), PLANT_INFINITE_HP_OFFSET);
+    AddLog(_T("寒冰菇一直冰冻功能已加载"));
+    AddLog(_T("寒冰菇一直冰冻地址偏移: 0x%X"), ICE_MUSHROOM_FREEZE_OFFSET);
     AddLog(_T("请点击【附加进程】按钮开始"));
 
     // 加载配置文件
@@ -434,6 +478,25 @@ void CPlantsCEDlg::SaveConfigToIni()
     strValue.Format(_T("%d"), nZombiesAllOut);
     WritePrivateProfileString(INI_SECTION, _T("ZombiesAllOut"), strValue, m_strIniPath);
 
+    // 保存土豆地雷无CD功能
+    int nPotatoMineNoCD = m_checkPotatoMineNoCD.GetCheck();
+    strValue.Format(_T("%d"), nPotatoMineNoCD);
+    WritePrivateProfileString(INI_SECTION, _T("ZombiesAllOut"), strValue, m_strIniPath);
+
+    // 保存食人花无CD功能
+    int nChomperNoCD = m_checkChomperNoCD.GetCheck();
+    strValue.Format(_T("%d"), nChomperNoCD);
+    WritePrivateProfileString(INI_SECTION, _T("ChomperNoCD"), strValue, m_strIniPath);
+
+    // 保存植物无限血
+    int nPlantInfiniteHP = m_checkPlantInfiniteHP.GetCheck();
+    strValue.Format(_T("%d"), nPlantInfiniteHP);
+    WritePrivateProfileString(INI_SECTION, _T("PlantInfiniteHP"), strValue, m_strIniPath);
+
+    // 保存寒冰菇一直冰冻功能
+    int nIceMushroomFreeze = m_checkIceMushroomFreeze.GetCheck();
+    strValue.Format(_T("%d"), nIceMushroomFreeze);
+    WritePrivateProfileString(INI_SECTION, _T("IceMushroomFreeze"), strValue, m_strIniPath);
 
     // 保存进程名称
     WritePrivateProfileString(INI_SECTION, _T("ProcessName"), m_strProcessName, m_strIniPath);
@@ -481,6 +544,22 @@ void CPlantsCEDlg::LoadConfigFromIni()
     int nZombiesAllOut = GetPrivateProfileInt(INI_SECTION, _T("ZombiesAllOut"), 0, m_strIniPath);
     m_checkZombiesAllOut.SetCheck(nZombiesAllOut);
 
+    // 加载土豆地雷无CD功能
+    int nPotatoMineNoCD = GetPrivateProfileInt(INI_SECTION, _T("PotatoMineNoCD"), 0, m_strIniPath);
+    m_checkPotatoMineNoCD.SetCheck(nPotatoMineNoCD);
+
+    // 加载食人花无CD功能
+    int nChomperNoCD = GetPrivateProfileInt(INI_SECTION, _T("ChomperNoCD"), 0, m_strIniPath);
+    m_checkChomperNoCD.SetCheck(nChomperNoCD);
+
+    // 加载植物无限血功能
+    int nPlantInfiniteHP = GetPrivateProfileInt(INI_SECTION, _T("PlantInfiniteHP"), 0, m_strIniPath);
+    m_checkPlantInfiniteHP.SetCheck(nPlantInfiniteHP);
+
+    // 加载寒冰菇一直冰冻功能
+    int nIceMushroomFreeze = GetPrivateProfileInt(INI_SECTION, _T("IceMushroomFreeze"), 0, m_strIniPath);
+    m_checkIceMushroomFreeze.SetCheck(nIceMushroomFreeze);
+
     // 加载进程名称
     TCHAR szProcessName[MAX_PATH] = { 0 };
     GetPrivateProfileString(INI_SECTION, _T("ProcessName"), TARGET_PROCESS_NAME,
@@ -500,6 +579,10 @@ void CPlantsCEDlg::LoadConfigFromIni()
     AddLog(_T("  快速发射: %s"), nFastShoot ? _T("启用") : _T("禁用"));
     AddLog(_T("  全屏爆炸: %s"), nFullScreenExplode ? _T("启用") : _T("禁用"));
     AddLog(_T("  僵尸全部出动: %s"), nZombiesAllOut ? _T("启用") : _T("禁用"));
+    AddLog(_T("  土豆地雷无CD: %s"), nPotatoMineNoCD ? _T("启用") : _T("禁用"));
+    AddLog(_T("  食人花无CD: %s"), nChomperNoCD ? _T("启用") : _T("禁用"));
+    AddLog(_T("  植物无限血: %s"), nPlantInfiniteHP ? _T("启用") : _T("禁用"));
+    AddLog(_T("  寒冰菇一直冰冻: %s"), nIceMushroomFreeze ? _T("启用") : _T("禁用"));
     AddLog(_T("  进程名称: %s"), m_strProcessName);
 }
 
@@ -515,52 +598,80 @@ void CPlantsCEDlg::ApplyAllCheatsFromConfig()
     AddLog(_T("[配置] 正在应用保存的修改功能..."));
 
     // 应用阳光初始值10000功能
-    if (m_checkSunInitBigValue.GetCheck() == BST_CHECKED)
+    if (m_checkSunInitBigValue.GetCheck() == BST_CHECKED && !m_bSunInitBigValueEnabled)
     {
         AddLog(_T("[配置] 启用阳光初始值10000"));
         EnableSunInitBigValue();
     }
 
     // 应用种植植物无CD功能
-    if (m_checkNoPlantCD.GetCheck() == BST_CHECKED)
+    if (m_checkNoPlantCD.GetCheck() == BST_CHECKED && !m_bNoPlantCDEnabled)
     {
         AddLog(_T("[配置] 启用种植植物无CD"));
         EnableNoPlantCD();
     }
 
     // 应用自动快速生产阳光功能
-    if (m_checkAutoFastSun.GetCheck() == BST_CHECKED)
+    if (m_checkAutoFastSun.GetCheck() == BST_CHECKED && !m_bAutoFastSunEnabled)
     {
         AddLog(_T("[配置] 启用自动快速生产阳光"));
         EnableAutoFastSun();
     }
 
     // 应用自动收集阳光功能
-    if (m_checkAutoCollectSun.GetCheck() == BST_CHECKED)
+    if (m_checkAutoCollectSun.GetCheck() == BST_CHECKED && !m_bAutoCollectSunEnabled)
     {
         AddLog(_T("[配置] 启用自动收集阳光"));
         EnableAutoCollectSun();
     }
 
     // 应用快速发射功能
-    if (m_checkFastShoot.GetCheck() == BST_CHECKED)
+    if (m_checkFastShoot.GetCheck() == BST_CHECKED && !m_bFastShootEnabled)
     {
         AddLog(_T("[配置] 启用快速发射"));
         EnableFastShoot();
     }
 
-    // 应用全屏爆炸
-    if (m_checkFullScreenExplode.GetCheck() == BST_CHECKED)
+    // 应用全屏爆炸功能
+    if (m_checkFullScreenExplode.GetCheck() == BST_CHECKED && !m_bFullScreenExplodeEnabled)
     {
-        AddLog(_T("[配置] 启用快速发射"));
+        AddLog(_T("[配置] 启用全屏爆炸"));
         EnableFullScreenExplode();
     }
 
-    // 应用全部僵尸出动
-    if (m_checkZombiesAllOut.GetCheck() == BST_CHECKED)
+    // 应用僵尸全部出动功能
+    if (m_checkZombiesAllOut.GetCheck() == BST_CHECKED && !m_bZombiesAllOutEnabled)
     {
-        AddLog(_T("[配置] 启用快速发射"));
+        AddLog(_T("[配置] 启用僵尸全部出动"));
         EnableZombiesAllOut();
+    }
+
+    // 应用土豆地雷无CD功能
+    if (m_checkPotatoMineNoCD.GetCheck() == BST_CHECKED && !m_bPotatoMineNoCDEnabled)
+    {
+        AddLog(_T("[配置] 启用土豆地雷无CD"));
+        EnablePotatoMineNoCD();
+    }
+
+    // 应用食人花无CD功能
+    if (m_checkChomperNoCD.GetCheck() == BST_CHECKED && !m_bChomperNoCDEnabled)
+    {
+        AddLog(_T("[配置] 启用食人花无CD"));
+        EnableChomperNoCD();
+    }
+
+    // 应用植物无限血功能
+    if (m_checkPlantInfiniteHP.GetCheck() == BST_CHECKED && !m_bPlantInfiniteHPEnabled)
+    {
+        AddLog(_T("[配置] 启用植物无限血"));
+        EnablePlantInfiniteHP();
+    }
+
+    // 应用寒冰菇一直冰冻功能
+    if (m_checkIceMushroomFreeze.GetCheck() == BST_CHECKED && !m_bIceMushroomFreezeEnabled)
+    {
+        AddLog(_T("[配置] 启用寒冰菇一直冰冻"));
+        EnableIceMushroomFreeze();
     }
 
     AddLog(_T("[配置] 应用完成"));
@@ -925,6 +1036,10 @@ void CPlantsCEDlg::DetachFromProcess()
     m_checkFastShoot.EnableWindow(FALSE);
     m_checkZombiesAllOut.EnableWindow(FALSE);
     m_checkFullScreenExplode.EnableWindow(FALSE);
+    m_checkPotatoMineNoCD.EnableWindow(FALSE);
+    m_checkChomperNoCD.EnableWindow(FALSE);
+    m_checkPlantInfiniteHP.EnableWindow(FALSE);
+    m_checkIceMushroomFreeze.EnableWindow(FALSE);
 
     // 禁用卡槽控件
     m_comboSlot1.EnableWindow(FALSE);
@@ -965,6 +1080,10 @@ void CPlantsCEDlg::OnBnClickedAttachprocess()
         m_checkAutoCollectSun.EnableWindow(TRUE);
         m_checkFastShoot.EnableWindow(TRUE);
         m_checkFullScreenExplode.EnableWindow(TRUE);
+        m_checkPotatoMineNoCD.EnableWindow(TRUE);
+        m_checkChomperNoCD.EnableWindow(TRUE);
+        m_checkPlantInfiniteHP.EnableWindow(TRUE);
+        m_checkIceMushroomFreeze.EnableWindow(TRUE);
 
         // 启用卡槽控件
         m_comboSlot1.EnableWindow(TRUE);
@@ -3541,6 +3660,1192 @@ void CPlantsCEDlg::OnBnClickedZombiesallgo()
     else
     {
         DisableZombiesAllOut();
+    }
+
+    // 保存配置
+    SaveConfigToIni();
+}
+
+// 原始字节码: jne PlantsVsZombies_后台.exe+60053
+const BYTE POTATO_MINE_NO_CD_ORIGINAL_BYTES[] = {
+    0x0F, 0x85, 0xFA, 0x01, 0x00, 0x00  // jne +0x1FA
+};
+
+// 自定义代码: nop (6个nop，因为原始指令6字节)
+const BYTE POTATO_MINE_NO_CD_NEW_CODE[] = {
+    0x90, 0x90, 0x90, 0x90, 0x90, 0x90,  // 6个nop
+    0xE9                                   // jmp
+};
+
+// ==================== 土豆地雷无CD功能 ====================
+
+// 分配内存
+BOOL CPlantsCEDlg::AllocateMemoryForPotatoMineNoCD()
+{
+    if (m_bPotatoMineNoCDMemoryAllocated && m_dwPotatoMineNoCDAllocated)
+    {
+        return TRUE;
+    }
+
+    AddLog(_T("[土豆地雷无CD] 正在分配内存..."));
+
+    m_dwPotatoMineNoCDAllocated = (DWORD_PTR)VirtualAllocEx(
+        m_hProcess,
+        NULL,
+        2048,
+        MEM_COMMIT | MEM_RESERVE,
+        PAGE_EXECUTE_READWRITE
+    );
+
+    if (!m_dwPotatoMineNoCDAllocated)
+    {
+        AddLog(_T("[土豆地雷无CD] 分配内存失败，错误码: %d"), GetLastError());
+        return FALSE;
+    }
+
+    AddLog(_T("[土豆地雷无CD] 内存分配成功: 0x%08X"), m_dwPotatoMineNoCDAllocated);
+    m_bPotatoMineNoCDMemoryAllocated = TRUE;
+    return TRUE;
+}
+
+// 写入自定义代码
+BOOL CPlantsCEDlg::WriteCustomCodeForPotatoMineNoCD()
+{
+    if (!m_bPotatoMineNoCDMemoryAllocated)
+        return FALSE;
+
+    // 计算返回地址：原地址 + 6 (原始指令6字节)
+    DWORD_PTR returnAddress = m_dwPotatoMineNoCDAddress + 6;
+
+    // 计算JMP偏移
+    DWORD_PTR jmpPosition = m_dwPotatoMineNoCDAllocated + sizeof(POTATO_MINE_NO_CD_NEW_CODE);
+    DWORD jmpOffset = (DWORD)(returnAddress - (jmpPosition + 4));
+
+    const size_t codeSize = sizeof(POTATO_MINE_NO_CD_NEW_CODE) + 4;
+    BYTE* fullCode = new BYTE[codeSize];
+
+    memcpy(fullCode, POTATO_MINE_NO_CD_NEW_CODE, sizeof(POTATO_MINE_NO_CD_NEW_CODE));
+
+    // 设置JMP偏移
+    size_t jmpPos = sizeof(POTATO_MINE_NO_CD_NEW_CODE) - 1;
+    fullCode[jmpPos] = 0xE9;
+    fullCode[sizeof(POTATO_MINE_NO_CD_NEW_CODE)] = (BYTE)(jmpOffset & 0xFF);
+    fullCode[sizeof(POTATO_MINE_NO_CD_NEW_CODE) + 1] = (BYTE)((jmpOffset >> 8) & 0xFF);
+    fullCode[sizeof(POTATO_MINE_NO_CD_NEW_CODE) + 2] = (BYTE)((jmpOffset >> 16) & 0xFF);
+    fullCode[sizeof(POTATO_MINE_NO_CD_NEW_CODE) + 3] = (BYTE)((jmpOffset >> 24) & 0xFF);
+
+    AddLog(_T("[土豆地雷无CD] 分配地址: 0x%08X"), m_dwPotatoMineNoCDAllocated);
+    AddLog(_T("[土豆地雷无CD] 目标地址: 0x%08X"), m_dwPotatoMineNoCDAddress);
+    AddLog(_T("[土豆地雷无CD] 返回地址: 0x%08X"), returnAddress);
+    AddLog(_T("[土豆地雷无CD] JMP偏移: 0x%08X"), jmpOffset);
+
+    SIZE_T bytesWritten = 0;
+    BOOL bResult = WriteProcessMemory(m_hProcess, (LPVOID)m_dwPotatoMineNoCDAllocated,
+        fullCode, codeSize, &bytesWritten);
+
+    if (bResult && bytesWritten == codeSize)
+    {
+        CString strCode;
+        for (size_t i = 0; i < codeSize; i++)
+        {
+            strCode.AppendFormat(_T("%02X "), fullCode[i]);
+        }
+        AddLog(_T("[土豆地雷无CD] 写入代码: %s"), strCode);
+        AddLog(_T("[土豆地雷无CD] 自定义代码写入成功"));
+    }
+    else
+    {
+        AddLog(_T("[土豆地雷无CD] 写入失败，错误码: %d"), GetLastError());
+    }
+
+    delete[] fullCode;
+    return (bResult && bytesWritten == codeSize);
+}
+
+// 安装Hook
+BOOL CPlantsCEDlg::InstallHookForPotatoMineNoCD()
+{
+    AddLog(_T("[土豆地雷无CD] 正在安装Hook..."));
+
+    // 计算JMP偏移：从目标地址跳转到分配的内存
+    DWORD jmpOffset = (DWORD)(m_dwPotatoMineNoCDAllocated - (m_dwPotatoMineNoCDAddress + 5));
+
+    BYTE jmpInstruction[6] = { 0xE9 };
+    jmpInstruction[1] = (BYTE)(jmpOffset & 0xFF);
+    jmpInstruction[2] = (BYTE)((jmpOffset >> 8) & 0xFF);
+    jmpInstruction[3] = (BYTE)((jmpOffset >> 16) & 0xFF);
+    jmpInstruction[4] = (BYTE)((jmpOffset >> 24) & 0xFF);
+    jmpInstruction[5] = 0x90;
+
+    AddLog(_T("[土豆地雷无CD] JMP从 0x%08X 到 0x%08X"),
+        m_dwPotatoMineNoCDAddress, m_dwPotatoMineNoCDAllocated);
+    AddLog(_T("[土豆地雷无CD] JMP偏移: 0x%08X"), jmpOffset);
+    AddLog(_T("[土豆地雷无CD] JMP指令: %02X %02X %02X %02X %02X"),
+        jmpInstruction[0], jmpInstruction[1], jmpInstruction[2],
+        jmpInstruction[3], jmpInstruction[4]);
+
+    DWORD dwOldProtect = 0;
+    VirtualProtectEx(m_hProcess, (LPVOID)m_dwPotatoMineNoCDAddress, 6,
+        PAGE_EXECUTE_READWRITE, &dwOldProtect);
+
+    SIZE_T bytesWritten = 0;
+    BOOL bResult = WriteProcessMemory(m_hProcess, (LPVOID)m_dwPotatoMineNoCDAddress,
+        jmpInstruction, 6, &bytesWritten);
+
+    VirtualProtectEx(m_hProcess, (LPVOID)m_dwPotatoMineNoCDAddress, 6, dwOldProtect, &dwOldProtect);
+
+    if (bResult && bytesWritten == 6)
+    {
+        AddLog(_T("[土豆地雷无CD] Hook安装成功！"));
+        return TRUE;
+    }
+    else
+    {
+        AddLog(_T("[土豆地雷无CD] Hook安装失败，错误码: %d"), GetLastError());
+        return FALSE;
+    }
+}
+
+// 释放内存
+void CPlantsCEDlg::FreePotatoMineNoCDMemory()
+{
+    if (m_bPotatoMineNoCDMemoryAllocated && m_dwPotatoMineNoCDAllocated)
+    {
+        VirtualFreeEx(m_hProcess, (LPVOID)m_dwPotatoMineNoCDAllocated, 0, MEM_RELEASE);
+        AddLog(_T("[土豆地雷无CD] 内存已释放"));
+        m_bPotatoMineNoCDMemoryAllocated = FALSE;
+        m_dwPotatoMineNoCDAllocated = 0;
+    }
+}
+
+// 启用土豆地雷无CD
+void CPlantsCEDlg::EnablePotatoMineNoCD()
+{
+    if (!m_hProcess || !m_bAttached)
+    {
+        AddLog(_T("[土豆地雷无CD] 错误: 未附加进程"));
+        return;
+    }
+
+    if (m_bPotatoMineNoCDEnabled)
+    {
+        AddLog(_T("[土豆地雷无CD] 已经启用"));
+        return;
+    }
+
+    AddLog(_T("[土豆地雷无CD] 正在启用..."));
+
+    // 获取目标地址
+    if (m_dwPotatoMineNoCDAddress == 0)
+    {
+        DWORD_PTR dwModuleBase = GetModuleBaseAddress();
+        if (dwModuleBase)
+        {
+            m_dwPotatoMineNoCDAddress = dwModuleBase + POTATO_MINE_NO_CD_OFFSET;
+            AddLog(_T("[土豆地雷无CD] 目标地址: 0x%08X"), m_dwPotatoMineNoCDAddress);
+        }
+        else
+        {
+            AddLog(_T("[土豆地雷无CD] 无法获取模块基址"));
+            return;
+        }
+    }
+
+    // 读取当前字节码
+    BYTE currentBytes[6] = { 0 };
+    SIZE_T bytesRead = 0;
+    if (ReadProcessMemory(m_hProcess, (LPCVOID)m_dwPotatoMineNoCDAddress, currentBytes, 6, &bytesRead))
+    {
+        AddLog(_T("[土豆地雷无CD] 当前字节码: %02X %02X %02X %02X %02X %02X"),
+            currentBytes[0], currentBytes[1], currentBytes[2],
+            currentBytes[3], currentBytes[4], currentBytes[5]);
+    }
+
+    // 1. 分配内存
+    if (!AllocateMemoryForPotatoMineNoCD())
+        return;
+
+    // 2. 写入自定义代码
+    if (!WriteCustomCodeForPotatoMineNoCD())
+    {
+        FreePotatoMineNoCDMemory();
+        return;
+    }
+
+    // 3. 安装Hook
+    if (!InstallHookForPotatoMineNoCD())
+    {
+        FreePotatoMineNoCDMemory();
+        return;
+    }
+
+    m_bPotatoMineNoCDEnabled = TRUE;
+    AddLog(_T("[土豆地雷无CD] 成功启用！土豆地雷可以连续种植"));
+}
+
+// 禁用土豆地雷无CD
+void CPlantsCEDlg::DisablePotatoMineNoCD()
+{
+    if (!m_hProcess || !m_bAttached)
+    {
+        AddLog(_T("[土豆地雷无CD] 错误: 未附加进程"));
+        return;
+    }
+
+    if (!m_bPotatoMineNoCDEnabled)
+    {
+        AddLog(_T("[土豆地雷无CD] 已经禁用"));
+        return;
+    }
+
+    AddLog(_T("[土豆地雷无CD] 正在禁用..."));
+
+    if (m_dwPotatoMineNoCDAddress == 0)
+    {
+        DWORD_PTR dwModuleBase = GetModuleBaseAddress();
+        if (dwModuleBase)
+            m_dwPotatoMineNoCDAddress = dwModuleBase + POTATO_MINE_NO_CD_OFFSET;
+    }
+
+    // 恢复原始字节码
+    DWORD dwOldProtect = 0;
+    VirtualProtectEx(m_hProcess, (LPVOID)m_dwPotatoMineNoCDAddress, sizeof(POTATO_MINE_NO_CD_ORIGINAL_BYTES),
+        PAGE_EXECUTE_READWRITE, &dwOldProtect);
+
+    SIZE_T bytesWritten = 0;
+    BOOL bResult = WriteProcessMemory(m_hProcess, (LPVOID)m_dwPotatoMineNoCDAddress,
+        POTATO_MINE_NO_CD_ORIGINAL_BYTES, sizeof(POTATO_MINE_NO_CD_ORIGINAL_BYTES), &bytesWritten);
+
+    VirtualProtectEx(m_hProcess, (LPVOID)m_dwPotatoMineNoCDAddress, sizeof(POTATO_MINE_NO_CD_ORIGINAL_BYTES),
+        dwOldProtect, &dwOldProtect);
+
+    if (bResult && bytesWritten == sizeof(POTATO_MINE_NO_CD_ORIGINAL_BYTES))
+    {
+        AddLog(_T("[土豆地雷无CD] 成功禁用！已恢复正常CD"));
+        m_bPotatoMineNoCDEnabled = FALSE;
+        FreePotatoMineNoCDMemory();
+    }
+    else
+    {
+        AddLog(_T("[土豆地雷无CD] 恢复失败，错误码: %d"), GetLastError());
+    }
+}
+
+
+void CPlantsCEDlg::OnBnClickedPotatominenocd()
+{
+    // TODO: 在此添加控件通知处理程序代码
+    int nCheck = m_checkPotatoMineNoCD.GetCheck();
+
+    if (!m_bAttached || !m_hProcess)
+    {
+        AddLog(_T("[土豆地雷无CD] 错误: 请先附加进程"));
+        m_checkPotatoMineNoCD.SetCheck(m_bPotatoMineNoCDEnabled ? BST_CHECKED : BST_UNCHECKED);
+        return;
+    }
+
+    if (nCheck == BST_CHECKED)
+    {
+        EnablePotatoMineNoCD();
+    }
+    else
+    {
+        DisablePotatoMineNoCD();
+    }
+
+    // 保存配置
+    SaveConfigToIni();
+}
+
+// 原始字节码: jne PlantsVsZombies_后台.exe+615C6; push 14; push esi (5字节)
+const BYTE CHOMPER_NO_CD_ORIGINAL_BYTES[] = {
+    0x75, 0x5F,        // jne +0x5F
+    0x6A, 0x14,        // push 0x14
+    0x56               // push esi
+};
+
+// 自定义代码: nop; push 14; push esi (5字节)
+const BYTE CHOMPER_NO_CD_NEW_CODE[] = {
+    0x90,              // nop (替换jne)
+    0x6A, 0x14,        // push 0x14
+    0x56,              // push esi
+    0xE9               // jmp
+};
+
+// ==================== 食人花无CD功能 ====================
+
+// 分配内存
+BOOL CPlantsCEDlg::AllocateMemoryForChomperNoCD()
+{
+    if (m_bChomperNoCDMemoryAllocated && m_dwChomperNoCDAllocated)
+    {
+        return TRUE;
+    }
+
+    AddLog(_T("[食人花无CD] 正在分配内存..."));
+
+    m_dwChomperNoCDAllocated = (DWORD_PTR)VirtualAllocEx(
+        m_hProcess,
+        NULL,
+        2048,
+        MEM_COMMIT | MEM_RESERVE,
+        PAGE_EXECUTE_READWRITE
+    );
+
+    if (!m_dwChomperNoCDAllocated)
+    {
+        AddLog(_T("[食人花无CD] 分配内存失败，错误码: %d"), GetLastError());
+        return FALSE;
+    }
+
+    AddLog(_T("[食人花无CD] 内存分配成功: 0x%08X"), m_dwChomperNoCDAllocated);
+    m_bChomperNoCDMemoryAllocated = TRUE;
+    return TRUE;
+}
+
+// 写入自定义代码
+BOOL CPlantsCEDlg::WriteCustomCodeForChomperNoCD()
+{
+    if (!m_bChomperNoCDMemoryAllocated)
+        return FALSE;
+
+    // 计算返回地址：原地址 + 5 (原始指令5字节)
+    DWORD_PTR returnAddress = m_dwChomperNoCDAddress + 5;
+
+    // 计算JMP位置和偏移
+    DWORD_PTR jmpPosition = m_dwChomperNoCDAllocated + sizeof(CHOMPER_NO_CD_NEW_CODE);
+    // 偏移计算：JMP指令后跟4字节偏移
+    DWORD jmpOffset = (DWORD)(returnAddress - (jmpPosition + 4));
+
+    const size_t codeSize = sizeof(CHOMPER_NO_CD_NEW_CODE) + 4;
+    BYTE* fullCode = new BYTE[codeSize];
+
+    memcpy(fullCode, CHOMPER_NO_CD_NEW_CODE, sizeof(CHOMPER_NO_CD_NEW_CODE));
+
+    // 设置JMP偏移
+    size_t jmpPos = sizeof(CHOMPER_NO_CD_NEW_CODE) - 1;
+    fullCode[jmpPos] = 0xE9;
+    fullCode[sizeof(CHOMPER_NO_CD_NEW_CODE)] = (BYTE)(jmpOffset & 0xFF);
+    fullCode[sizeof(CHOMPER_NO_CD_NEW_CODE) + 1] = (BYTE)((jmpOffset >> 8) & 0xFF);
+    fullCode[sizeof(CHOMPER_NO_CD_NEW_CODE) + 2] = (BYTE)((jmpOffset >> 16) & 0xFF);
+    fullCode[sizeof(CHOMPER_NO_CD_NEW_CODE) + 3] = (BYTE)((jmpOffset >> 24) & 0xFF);
+
+    AddLog(_T("[食人花无CD] 分配地址: 0x%08X"), m_dwChomperNoCDAllocated);
+    AddLog(_T("[食人花无CD] 目标地址: 0x%08X"), m_dwChomperNoCDAddress);
+    AddLog(_T("[食人花无CD] 返回地址: 0x%08X"), returnAddress);
+    AddLog(_T("[食人花无CD] JMP位置: 0x%08X"), jmpPosition);
+    AddLog(_T("[食人花无CD] JMP偏移: 0x%08X"), jmpOffset);
+
+    SIZE_T bytesWritten = 0;
+    BOOL bResult = WriteProcessMemory(m_hProcess, (LPVOID)m_dwChomperNoCDAllocated,
+        fullCode, codeSize, &bytesWritten);
+
+    if (bResult && bytesWritten == codeSize)
+    {
+        CString strCode;
+        for (size_t i = 0; i < codeSize; i++)
+        {
+            strCode.AppendFormat(_T("%02X "), fullCode[i]);
+        }
+        AddLog(_T("[食人花无CD] 写入代码: %s"), strCode);
+        AddLog(_T("[食人花无CD] 自定义代码写入成功"));
+    }
+    else
+    {
+        AddLog(_T("[食人花无CD] 写入失败，错误码: %d"), GetLastError());
+    }
+
+    delete[] fullCode;
+    return (bResult && bytesWritten == codeSize);
+}
+
+// 安装Hook
+BOOL CPlantsCEDlg::InstallHookForChomperNoCD()
+{
+    AddLog(_T("[食人花无CD] 正在安装Hook..."));
+
+    // 原始指令5字节，JMP指令5字节，长度正好对齐，不需要NOP填充
+    DWORD jmpOffset = (DWORD)(m_dwChomperNoCDAllocated - (m_dwChomperNoCDAddress + 5));
+
+    // 5字节JMP指令
+    BYTE jmpInstruction[5] = { 0xE9 };
+    jmpInstruction[1] = (BYTE)(jmpOffset & 0xFF);
+    jmpInstruction[2] = (BYTE)((jmpOffset >> 8) & 0xFF);
+    jmpInstruction[3] = (BYTE)((jmpOffset >> 16) & 0xFF);
+    jmpInstruction[4] = (BYTE)((jmpOffset >> 24) & 0xFF);
+
+    AddLog(_T("[食人花无CD] JMP从 0x%08X 到 0x%08X"),
+        m_dwChomperNoCDAddress, m_dwChomperNoCDAllocated);
+    AddLog(_T("[食人花无CD] JMP偏移: 0x%08X"), jmpOffset);
+    AddLog(_T("[食人花无CD] JMP指令: %02X %02X %02X %02X %02X"),
+        jmpInstruction[0], jmpInstruction[1], jmpInstruction[2],
+        jmpInstruction[3], jmpInstruction[4]);
+
+    DWORD dwOldProtect = 0;
+    VirtualProtectEx(m_hProcess, (LPVOID)m_dwChomperNoCDAddress, 5,
+        PAGE_EXECUTE_READWRITE, &dwOldProtect);
+
+    SIZE_T bytesWritten = 0;
+    BOOL bResult = WriteProcessMemory(m_hProcess, (LPVOID)m_dwChomperNoCDAddress,
+        jmpInstruction, 5, &bytesWritten);
+
+    VirtualProtectEx(m_hProcess, (LPVOID)m_dwChomperNoCDAddress, 5, dwOldProtect, &dwOldProtect);
+
+    if (bResult && bytesWritten == 5)
+    {
+        AddLog(_T("[食人花无CD] Hook安装成功！"));
+        return TRUE;
+    }
+    else
+    {
+        AddLog(_T("[食人花无CD] Hook安装失败，错误码: %d"), GetLastError());
+        return FALSE;
+    }
+}
+
+// 释放内存
+void CPlantsCEDlg::FreeChomperNoCDMemory()
+{
+    if (m_bChomperNoCDMemoryAllocated && m_dwChomperNoCDAllocated)
+    {
+        VirtualFreeEx(m_hProcess, (LPVOID)m_dwChomperNoCDAllocated, 0, MEM_RELEASE);
+        AddLog(_T("[食人花无CD] 内存已释放"));
+        m_bChomperNoCDMemoryAllocated = FALSE;
+        m_dwChomperNoCDAllocated = 0;
+    }
+}
+
+// 启用食人花无CD
+void CPlantsCEDlg::EnableChomperNoCD()
+{
+    if (!m_hProcess || !m_bAttached)
+    {
+        AddLog(_T("[食人花无CD] 错误: 未附加进程"));
+        return;
+    }
+
+    if (m_bChomperNoCDEnabled)
+    {
+        AddLog(_T("[食人花无CD] 已经启用"));
+        return;
+    }
+
+    AddLog(_T("[食人花无CD] 正在启用..."));
+
+    // 获取目标地址
+    if (m_dwChomperNoCDAddress == 0)
+    {
+        DWORD_PTR dwModuleBase = GetModuleBaseAddress();
+        if (dwModuleBase)
+        {
+            m_dwChomperNoCDAddress = dwModuleBase + CHOMPER_NO_CD_OFFSET;
+            AddLog(_T("[食人花无CD] 目标地址: 0x%08X"), m_dwChomperNoCDAddress);
+        }
+        else
+        {
+            AddLog(_T("[食人花无CD] 无法获取模块基址"));
+            return;
+        }
+    }
+
+    // 读取当前字节码
+    BYTE currentBytes[5] = { 0 };
+    SIZE_T bytesRead = 0;
+    if (ReadProcessMemory(m_hProcess, (LPCVOID)m_dwChomperNoCDAddress, currentBytes, 5, &bytesRead))
+    {
+        AddLog(_T("[食人花无CD] 当前字节码: %02X %02X %02X %02X %02X"),
+            currentBytes[0], currentBytes[1], currentBytes[2],
+            currentBytes[3], currentBytes[4]);
+    }
+
+    // 1. 分配内存
+    if (!AllocateMemoryForChomperNoCD())
+        return;
+
+    // 2. 写入自定义代码
+    if (!WriteCustomCodeForChomperNoCD())
+    {
+        FreeChomperNoCDMemory();
+        return;
+    }
+
+    // 3. 安装Hook
+    if (!InstallHookForChomperNoCD())
+    {
+        FreeChomperNoCDMemory();
+        return;
+    }
+
+    m_bChomperNoCDEnabled = TRUE;
+    AddLog(_T("[食人花无CD] 成功启用！食人花可以连续吞噬僵尸"));
+}
+
+// 禁用食人花无CD
+void CPlantsCEDlg::DisableChomperNoCD()
+{
+    if (!m_hProcess || !m_bAttached)
+    {
+        AddLog(_T("[食人花无CD] 错误: 未附加进程"));
+        return;
+    }
+
+    if (!m_bChomperNoCDEnabled)
+    {
+        AddLog(_T("[食人花无CD] 已经禁用"));
+        return;
+    }
+
+    AddLog(_T("[食人花无CD] 正在禁用..."));
+
+    if (m_dwChomperNoCDAddress == 0)
+    {
+        DWORD_PTR dwModuleBase = GetModuleBaseAddress();
+        if (dwModuleBase)
+            m_dwChomperNoCDAddress = dwModuleBase + CHOMPER_NO_CD_OFFSET;
+    }
+
+    // 恢复原始字节码 (5字节)
+    DWORD dwOldProtect = 0;
+    VirtualProtectEx(m_hProcess, (LPVOID)m_dwChomperNoCDAddress, sizeof(CHOMPER_NO_CD_ORIGINAL_BYTES),
+        PAGE_EXECUTE_READWRITE, &dwOldProtect);
+
+    SIZE_T bytesWritten = 0;
+    BOOL bResult = WriteProcessMemory(m_hProcess, (LPVOID)m_dwChomperNoCDAddress,
+        CHOMPER_NO_CD_ORIGINAL_BYTES, sizeof(CHOMPER_NO_CD_ORIGINAL_BYTES), &bytesWritten);
+
+    VirtualProtectEx(m_hProcess, (LPVOID)m_dwChomperNoCDAddress, sizeof(CHOMPER_NO_CD_ORIGINAL_BYTES),
+        dwOldProtect, &dwOldProtect);
+
+    if (bResult && bytesWritten == sizeof(CHOMPER_NO_CD_ORIGINAL_BYTES))
+    {
+        AddLog(_T("[食人花无CD] 成功禁用！已恢复正常CD"));
+        m_bChomperNoCDEnabled = FALSE;
+        FreeChomperNoCDMemory();
+    }
+    else
+    {
+        AddLog(_T("[食人花无CD] 恢复失败，错误码: %d"), GetLastError());
+    }
+}
+
+void CPlantsCEDlg::OnBnClickedEatzombiesnocd()
+{
+    // TODO: 在此添加控件通知处理程序代码
+    int nCheck = m_checkChomperNoCD.GetCheck();
+
+    if (!m_bAttached || !m_hProcess)
+    {
+        AddLog(_T("[食人花无CD] 错误: 请先附加进程"));
+        m_checkChomperNoCD.SetCheck(m_bChomperNoCDEnabled ? BST_CHECKED : BST_UNCHECKED);
+        return;
+    }
+
+    if (nCheck == BST_CHECKED)
+    {
+        EnableChomperNoCD();
+    }
+    else
+    {
+        DisableChomperNoCD();
+    }
+
+    // 保存配置
+    SaveConfigToIni();
+}
+
+// 原始字节码: add dword ptr [esi+40],-04; mov ecx,[esi+40] (7字节)
+const BYTE PLANT_INFINITE_HP_ORIGINAL_BYTES[] = {
+    0x83, 0x46, 0x40, 0xFC,  // add dword ptr [esi+40], -04
+    0x8B, 0x4E, 0x40         // mov ecx, [esi+40]
+};
+
+// 自定义代码: add dword ptr [esi+40],0; mov ecx,[esi+40] (7字节)
+// 将减血改为加0，实现无限血
+const BYTE PLANT_INFINITE_HP_NEW_CODE[] = {
+    0x83, 0x46, 0x40, 0x00,  // add dword ptr [esi+40], 0 (不减血)
+    0x8B, 0x4E, 0x40,        // mov ecx, [esi+40]
+    0xE9                     // jmp
+};
+
+// ==================== 植物无限血功能 ====================
+
+// 分配内存
+BOOL CPlantsCEDlg::AllocateMemoryForPlantInfiniteHP()
+{
+    if (m_bPlantInfiniteHPMemoryAllocated && m_dwPlantInfiniteHPAllocated)
+    {
+        return TRUE;
+    }
+
+    AddLog(_T("[植物无限血] 正在分配内存..."));
+
+    m_dwPlantInfiniteHPAllocated = (DWORD_PTR)VirtualAllocEx(
+        m_hProcess,
+        NULL,
+        2048,
+        MEM_COMMIT | MEM_RESERVE,
+        PAGE_EXECUTE_READWRITE
+    );
+
+    if (!m_dwPlantInfiniteHPAllocated)
+    {
+        AddLog(_T("[植物无限血] 分配内存失败，错误码: %d"), GetLastError());
+        return FALSE;
+    }
+
+    AddLog(_T("[植物无限血] 内存分配成功: 0x%08X"), m_dwPlantInfiniteHPAllocated);
+    m_bPlantInfiniteHPMemoryAllocated = TRUE;
+    return TRUE;
+}
+
+// 写入自定义代码
+BOOL CPlantsCEDlg::WriteCustomCodeForPlantInfiniteHP()
+{
+    if (!m_bPlantInfiniteHPMemoryAllocated)
+        return FALSE;
+
+    // 计算返回地址：原地址 + 7 (原始指令7字节)
+    DWORD_PTR returnAddress = m_dwPlantInfiniteHPAddress + 7;
+
+    // 计算JMP位置和偏移
+    DWORD_PTR jmpPosition = m_dwPlantInfiniteHPAllocated + sizeof(PLANT_INFINITE_HP_NEW_CODE);
+    // 偏移计算：JMP指令后跟4字节偏移
+    DWORD jmpOffset = (DWORD)(returnAddress - (jmpPosition + 4));
+
+    const size_t codeSize = sizeof(PLANT_INFINITE_HP_NEW_CODE) + 4;
+    BYTE* fullCode = new BYTE[codeSize];
+
+    memcpy(fullCode, PLANT_INFINITE_HP_NEW_CODE, sizeof(PLANT_INFINITE_HP_NEW_CODE));
+
+    // 设置JMP偏移
+    size_t jmpPos = sizeof(PLANT_INFINITE_HP_NEW_CODE) - 1;
+    fullCode[jmpPos] = 0xE9;
+    fullCode[sizeof(PLANT_INFINITE_HP_NEW_CODE)] = (BYTE)(jmpOffset & 0xFF);
+    fullCode[sizeof(PLANT_INFINITE_HP_NEW_CODE) + 1] = (BYTE)((jmpOffset >> 8) & 0xFF);
+    fullCode[sizeof(PLANT_INFINITE_HP_NEW_CODE) + 2] = (BYTE)((jmpOffset >> 16) & 0xFF);
+    fullCode[sizeof(PLANT_INFINITE_HP_NEW_CODE) + 3] = (BYTE)((jmpOffset >> 24) & 0xFF);
+
+    AddLog(_T("[植物无限血] 分配地址: 0x%08X"), m_dwPlantInfiniteHPAllocated);
+    AddLog(_T("[植物无限血] 目标地址: 0x%08X"), m_dwPlantInfiniteHPAddress);
+    AddLog(_T("[植物无限血] 返回地址: 0x%08X"), returnAddress);
+    AddLog(_T("[植物无限血] JMP位置: 0x%08X"), jmpPosition);
+    AddLog(_T("[植物无限血] JMP偏移: 0x%08X"), jmpOffset);
+
+    SIZE_T bytesWritten = 0;
+    BOOL bResult = WriteProcessMemory(m_hProcess, (LPVOID)m_dwPlantInfiniteHPAllocated,
+        fullCode, codeSize, &bytesWritten);
+
+    if (bResult && bytesWritten == codeSize)
+    {
+        CString strCode;
+        for (size_t i = 0; i < codeSize; i++)
+        {
+            strCode.AppendFormat(_T("%02X "), fullCode[i]);
+        }
+        AddLog(_T("[植物无限血] 写入代码: %s"), strCode);
+        AddLog(_T("[植物无限血] 自定义代码写入成功"));
+    }
+    else
+    {
+        AddLog(_T("[植物无限血] 写入失败，错误码: %d"), GetLastError());
+    }
+
+    delete[] fullCode;
+    return (bResult && bytesWritten == codeSize);
+}
+
+// 安装Hook
+BOOL CPlantsCEDlg::InstallHookForPlantInfiniteHP()
+{
+    AddLog(_T("[植物无限血] 正在安装Hook..."));
+
+    // 原始指令7字节，JMP指令5字节，需要2个NOP填充保持7字节
+    DWORD jmpOffset = (DWORD)(m_dwPlantInfiniteHPAllocated - (m_dwPlantInfiniteHPAddress + 5));
+
+    // 7字节指令: JMP(5字节) + NOP(2字节)
+    BYTE jmpInstruction[7] = { 0xE9 };
+    jmpInstruction[1] = (BYTE)(jmpOffset & 0xFF);
+    jmpInstruction[2] = (BYTE)((jmpOffset >> 8) & 0xFF);
+    jmpInstruction[3] = (BYTE)((jmpOffset >> 16) & 0xFF);
+    jmpInstruction[4] = (BYTE)((jmpOffset >> 24) & 0xFF);
+    jmpInstruction[5] = 0x90;  // NOP填充
+    jmpInstruction[6] = 0x90;  // NOP填充
+
+    AddLog(_T("[植物无限血] JMP从 0x%08X 到 0x%08X"),
+        m_dwPlantInfiniteHPAddress, m_dwPlantInfiniteHPAllocated);
+    AddLog(_T("[植物无限血] JMP偏移: 0x%08X"), jmpOffset);
+    AddLog(_T("[植物无限血] JMP指令: %02X %02X %02X %02X %02X %02X %02X"),
+        jmpInstruction[0], jmpInstruction[1], jmpInstruction[2],
+        jmpInstruction[3], jmpInstruction[4], jmpInstruction[5], jmpInstruction[6]);
+
+    DWORD dwOldProtect = 0;
+    VirtualProtectEx(m_hProcess, (LPVOID)m_dwPlantInfiniteHPAddress, 7,
+        PAGE_EXECUTE_READWRITE, &dwOldProtect);
+
+    SIZE_T bytesWritten = 0;
+    BOOL bResult = WriteProcessMemory(m_hProcess, (LPVOID)m_dwPlantInfiniteHPAddress,
+        jmpInstruction, 7, &bytesWritten);
+
+    VirtualProtectEx(m_hProcess, (LPVOID)m_dwPlantInfiniteHPAddress, 7, dwOldProtect, &dwOldProtect);
+
+    if (bResult && bytesWritten == 7)
+    {
+        AddLog(_T("[植物无限血] Hook安装成功！"));
+        return TRUE;
+    }
+    else
+    {
+        AddLog(_T("[植物无限血] Hook安装失败，错误码: %d"), GetLastError());
+        return FALSE;
+    }
+}
+
+// 释放内存
+void CPlantsCEDlg::FreePlantInfiniteHPMemory()
+{
+    if (m_bPlantInfiniteHPMemoryAllocated && m_dwPlantInfiniteHPAllocated)
+    {
+        VirtualFreeEx(m_hProcess, (LPVOID)m_dwPlantInfiniteHPAllocated, 0, MEM_RELEASE);
+        AddLog(_T("[植物无限血] 内存已释放"));
+        m_bPlantInfiniteHPMemoryAllocated = FALSE;
+        m_dwPlantInfiniteHPAllocated = 0;
+    }
+}
+
+// 启用植物无限血
+void CPlantsCEDlg::EnablePlantInfiniteHP()
+{
+    if (!m_hProcess || !m_bAttached)
+    {
+        AddLog(_T("[植物无限血] 错误: 未附加进程"));
+        return;
+    }
+
+    if (m_bPlantInfiniteHPEnabled)
+    {
+        AddLog(_T("[植物无限血] 已经启用"));
+        return;
+    }
+
+    AddLog(_T("[植物无限血] 正在启用..."));
+
+    // 获取目标地址
+    if (m_dwPlantInfiniteHPAddress == 0)
+    {
+        DWORD_PTR dwModuleBase = GetModuleBaseAddress();
+        if (dwModuleBase)
+        {
+            m_dwPlantInfiniteHPAddress = dwModuleBase + PLANT_INFINITE_HP_OFFSET;
+            AddLog(_T("[植物无限血] 目标地址: 0x%08X"), m_dwPlantInfiniteHPAddress);
+        }
+        else
+        {
+            AddLog(_T("[植物无限血] 无法获取模块基址"));
+            return;
+        }
+    }
+
+    // 读取当前字节码
+    BYTE currentBytes[7] = { 0 };
+    SIZE_T bytesRead = 0;
+    if (ReadProcessMemory(m_hProcess, (LPCVOID)m_dwPlantInfiniteHPAddress, currentBytes, 7, &bytesRead))
+    {
+        AddLog(_T("[植物无限血] 当前字节码: %02X %02X %02X %02X %02X %02X %02X"),
+            currentBytes[0], currentBytes[1], currentBytes[2], currentBytes[3],
+            currentBytes[4], currentBytes[5], currentBytes[6]);
+    }
+
+    // 1. 分配内存
+    if (!AllocateMemoryForPlantInfiniteHP())
+        return;
+
+    // 2. 写入自定义代码
+    if (!WriteCustomCodeForPlantInfiniteHP())
+    {
+        FreePlantInfiniteHPMemory();
+        return;
+    }
+
+    // 3. 安装Hook
+    if (!InstallHookForPlantInfiniteHP())
+    {
+        FreePlantInfiniteHPMemory();
+        return;
+    }
+
+    m_bPlantInfiniteHPEnabled = TRUE;
+    AddLog(_T("[植物无限血] 成功启用！植物将不会死亡"));
+}
+
+// 禁用植物无限血
+void CPlantsCEDlg::DisablePlantInfiniteHP()
+{
+    if (!m_hProcess || !m_bAttached)
+    {
+        AddLog(_T("[植物无限血] 错误: 未附加进程"));
+        return;
+    }
+
+    if (!m_bPlantInfiniteHPEnabled)
+    {
+        AddLog(_T("[植物无限血] 已经禁用"));
+        return;
+    }
+
+    AddLog(_T("[植物无限血] 正在禁用..."));
+
+    if (m_dwPlantInfiniteHPAddress == 0)
+    {
+        DWORD_PTR dwModuleBase = GetModuleBaseAddress();
+        if (dwModuleBase)
+            m_dwPlantInfiniteHPAddress = dwModuleBase + PLANT_INFINITE_HP_OFFSET;
+    }
+
+    // 恢复原始字节码 (7字节)
+    DWORD dwOldProtect = 0;
+    VirtualProtectEx(m_hProcess, (LPVOID)m_dwPlantInfiniteHPAddress, sizeof(PLANT_INFINITE_HP_ORIGINAL_BYTES),
+        PAGE_EXECUTE_READWRITE, &dwOldProtect);
+
+    SIZE_T bytesWritten = 0;
+    BOOL bResult = WriteProcessMemory(m_hProcess, (LPVOID)m_dwPlantInfiniteHPAddress,
+        PLANT_INFINITE_HP_ORIGINAL_BYTES, sizeof(PLANT_INFINITE_HP_ORIGINAL_BYTES), &bytesWritten);
+
+    VirtualProtectEx(m_hProcess, (LPVOID)m_dwPlantInfiniteHPAddress, sizeof(PLANT_INFINITE_HP_ORIGINAL_BYTES),
+        dwOldProtect, &dwOldProtect);
+
+    if (bResult && bytesWritten == sizeof(PLANT_INFINITE_HP_ORIGINAL_BYTES))
+    {
+        AddLog(_T("[植物无限血] 成功禁用！植物会正常受伤死亡"));
+        m_bPlantInfiniteHPEnabled = FALSE;
+        FreePlantInfiniteHPMemory();
+    }
+    else
+    {
+        AddLog(_T("[植物无限血] 恢复失败，错误码: %d"), GetLastError());
+    }
+}
+
+void CPlantsCEDlg::OnBnClickedPlantinfinitehp()
+{
+    // TODO: 在此添加控件通知处理程序代码
+    int nCheck = m_checkPlantInfiniteHP.GetCheck();
+
+    if (!m_bAttached || !m_hProcess)
+    {
+        AddLog(_T("[植物无限血] 错误: 请先附加进程"));
+        m_checkPlantInfiniteHP.SetCheck(m_bPlantInfiniteHPEnabled ? BST_CHECKED : BST_UNCHECKED);
+        return;
+    }
+
+    if (nCheck == BST_CHECKED)
+    {
+        EnablePlantInfiniteHP();
+    }
+    else
+    {
+        DisablePlantInfiniteHP();
+    }
+
+    // 保存配置
+    SaveConfigToIni();
+}
+
+// 原始字节码: add eax,-01; mov [edi+000000B4],eax (9字节)
+const BYTE ICE_MUSHROOM_FREEZE_ORIGINAL_BYTES[] = {
+    0x83, 0xC0, 0xFF,                    // add eax, -01
+    0x89, 0x87, 0xB4, 0x00, 0x00, 0x00   // mov [edi+000000B4], eax
+};
+
+// 自定义代码: nop; mov [edi+000000B4],eax (9字节)
+// 将减1操作替换为nop，保持eax不变，实现一直冰冻
+const BYTE ICE_MUSHROOM_FREEZE_NEW_CODE[] = {
+    0x90,                                // nop (替换 add eax,-01)
+    0x90,                                // nop (额外填充，因为add是3字节)
+    0x90,                                // nop
+    0x89, 0x87, 0xB4, 0x00, 0x00, 0x00,  // mov [edi+000000B4], eax
+    0xE9                                 // jmp
+};
+
+// ==================== 寒冰菇一直冰冻功能 ====================
+
+// 分配内存
+BOOL CPlantsCEDlg::AllocateMemoryForIceMushroomFreeze()
+{
+    if (m_bIceMushroomFreezeMemoryAllocated && m_dwIceMushroomFreezeAllocated)
+    {
+        return TRUE;
+    }
+
+    AddLog(_T("[寒冰菇冰冻] 正在分配内存..."));
+
+    m_dwIceMushroomFreezeAllocated = (DWORD_PTR)VirtualAllocEx(
+        m_hProcess,
+        NULL,
+        2048,
+        MEM_COMMIT | MEM_RESERVE,
+        PAGE_EXECUTE_READWRITE
+    );
+
+    if (!m_dwIceMushroomFreezeAllocated)
+    {
+        AddLog(_T("[寒冰菇冰冻] 分配内存失败，错误码: %d"), GetLastError());
+        return FALSE;
+    }
+
+    AddLog(_T("[寒冰菇冰冻] 内存分配成功: 0x%08X"), m_dwIceMushroomFreezeAllocated);
+    m_bIceMushroomFreezeMemoryAllocated = TRUE;
+    return TRUE;
+}
+
+// 写入自定义代码
+BOOL CPlantsCEDlg::WriteCustomCodeForIceMushroomFreeze()
+{
+    if (!m_bIceMushroomFreezeMemoryAllocated)
+        return FALSE;
+
+    // 计算返回地址：原地址 + 9 (原始指令9字节)
+    DWORD_PTR returnAddress = m_dwIceMushroomFreezeAddress + 9;
+
+    // 计算JMP位置和偏移
+    DWORD_PTR jmpPosition = m_dwIceMushroomFreezeAllocated + sizeof(ICE_MUSHROOM_FREEZE_NEW_CODE);
+    // 偏移计算：JMP指令后跟4字节偏移
+    DWORD jmpOffset = (DWORD)(returnAddress - (jmpPosition + 4));
+
+    const size_t codeSize = sizeof(ICE_MUSHROOM_FREEZE_NEW_CODE) + 4;
+    BYTE* fullCode = new BYTE[codeSize];
+
+    memcpy(fullCode, ICE_MUSHROOM_FREEZE_NEW_CODE, sizeof(ICE_MUSHROOM_FREEZE_NEW_CODE));
+
+    // 设置JMP偏移
+    size_t jmpPos = sizeof(ICE_MUSHROOM_FREEZE_NEW_CODE) - 1;
+    fullCode[jmpPos] = 0xE9;
+    fullCode[sizeof(ICE_MUSHROOM_FREEZE_NEW_CODE)] = (BYTE)(jmpOffset & 0xFF);
+    fullCode[sizeof(ICE_MUSHROOM_FREEZE_NEW_CODE) + 1] = (BYTE)((jmpOffset >> 8) & 0xFF);
+    fullCode[sizeof(ICE_MUSHROOM_FREEZE_NEW_CODE) + 2] = (BYTE)((jmpOffset >> 16) & 0xFF);
+    fullCode[sizeof(ICE_MUSHROOM_FREEZE_NEW_CODE) + 3] = (BYTE)((jmpOffset >> 24) & 0xFF);
+
+    AddLog(_T("[寒冰菇冰冻] 分配地址: 0x%08X"), m_dwIceMushroomFreezeAllocated);
+    AddLog(_T("[寒冰菇冰冻] 目标地址: 0x%08X"), m_dwIceMushroomFreezeAddress);
+    AddLog(_T("[寒冰菇冰冻] 返回地址: 0x%08X"), returnAddress);
+    AddLog(_T("[寒冰菇冰冻] JMP位置: 0x%08X"), jmpPosition);
+    AddLog(_T("[寒冰菇冰冻] JMP偏移: 0x%08X"), jmpOffset);
+
+    SIZE_T bytesWritten = 0;
+    BOOL bResult = WriteProcessMemory(m_hProcess, (LPVOID)m_dwIceMushroomFreezeAllocated,
+        fullCode, codeSize, &bytesWritten);
+
+    if (bResult && bytesWritten == codeSize)
+    {
+        CString strCode;
+        for (size_t i = 0; i < codeSize; i++)
+        {
+            strCode.AppendFormat(_T("%02X "), fullCode[i]);
+        }
+        AddLog(_T("[寒冰菇冰冻] 写入代码: %s"), strCode);
+        AddLog(_T("[寒冰菇冰冻] 自定义代码写入成功"));
+    }
+    else
+    {
+        AddLog(_T("[寒冰菇冰冻] 写入失败，错误码: %d"), GetLastError());
+    }
+
+    delete[] fullCode;
+    return (bResult && bytesWritten == codeSize);
+}
+
+// 安装Hook
+BOOL CPlantsCEDlg::InstallHookForIceMushroomFreeze()
+{
+    AddLog(_T("[寒冰菇冰冻] 正在安装Hook..."));
+
+    // 原始指令9字节，JMP指令5字节，需要4个NOP填充保持9字节
+    DWORD jmpOffset = (DWORD)(m_dwIceMushroomFreezeAllocated - (m_dwIceMushroomFreezeAddress + 5));
+
+    // 9字节指令: JMP(5字节) + NOP(4字节)
+    BYTE jmpInstruction[9] = { 0xE9 };
+    jmpInstruction[1] = (BYTE)(jmpOffset & 0xFF);
+    jmpInstruction[2] = (BYTE)((jmpOffset >> 8) & 0xFF);
+    jmpInstruction[3] = (BYTE)((jmpOffset >> 16) & 0xFF);
+    jmpInstruction[4] = (BYTE)((jmpOffset >> 24) & 0xFF);
+    jmpInstruction[5] = 0x90;  // NOP填充
+    jmpInstruction[6] = 0x90;  // NOP填充
+    jmpInstruction[7] = 0x90;  // NOP填充
+    jmpInstruction[8] = 0x90;  // NOP填充
+
+    AddLog(_T("[寒冰菇冰冻] JMP从 0x%08X 到 0x%08X"),
+        m_dwIceMushroomFreezeAddress, m_dwIceMushroomFreezeAllocated);
+    AddLog(_T("[寒冰菇冰冻] JMP偏移: 0x%08X"), jmpOffset);
+    AddLog(_T("[寒冰菇冰冻] JMP指令: %02X %02X %02X %02X %02X %02X %02X %02X %02X"),
+        jmpInstruction[0], jmpInstruction[1], jmpInstruction[2],
+        jmpInstruction[3], jmpInstruction[4], jmpInstruction[5],
+        jmpInstruction[6], jmpInstruction[7], jmpInstruction[8]);
+
+    DWORD dwOldProtect = 0;
+    VirtualProtectEx(m_hProcess, (LPVOID)m_dwIceMushroomFreezeAddress, 9,
+        PAGE_EXECUTE_READWRITE, &dwOldProtect);
+
+    SIZE_T bytesWritten = 0;
+    BOOL bResult = WriteProcessMemory(m_hProcess, (LPVOID)m_dwIceMushroomFreezeAddress,
+        jmpInstruction, 9, &bytesWritten);
+
+    VirtualProtectEx(m_hProcess, (LPVOID)m_dwIceMushroomFreezeAddress, 9, dwOldProtect, &dwOldProtect);
+
+    if (bResult && bytesWritten == 9)
+    {
+        AddLog(_T("[寒冰菇冰冻] Hook安装成功！"));
+        return TRUE;
+    }
+    else
+    {
+        AddLog(_T("[寒冰菇冰冻] Hook安装失败，错误码: %d"), GetLastError());
+        return FALSE;
+    }
+}
+
+// 释放内存
+void CPlantsCEDlg::FreeIceMushroomFreezeMemory()
+{
+    if (m_bIceMushroomFreezeMemoryAllocated && m_dwIceMushroomFreezeAllocated)
+    {
+        VirtualFreeEx(m_hProcess, (LPVOID)m_dwIceMushroomFreezeAllocated, 0, MEM_RELEASE);
+        AddLog(_T("[寒冰菇冰冻] 内存已释放"));
+        m_bIceMushroomFreezeMemoryAllocated = FALSE;
+        m_dwIceMushroomFreezeAllocated = 0;
+    }
+}
+
+// 启用寒冰菇一直冰冻
+void CPlantsCEDlg::EnableIceMushroomFreeze()
+{
+    if (!m_hProcess || !m_bAttached)
+    {
+        AddLog(_T("[寒冰菇冰冻] 错误: 未附加进程"));
+        return;
+    }
+
+    if (m_bIceMushroomFreezeEnabled)
+    {
+        AddLog(_T("[寒冰菇冰冻] 已经启用"));
+        return;
+    }
+
+    AddLog(_T("[寒冰菇冰冻] 正在启用..."));
+
+    // 获取目标地址
+    if (m_dwIceMushroomFreezeAddress == 0)
+    {
+        DWORD_PTR dwModuleBase = GetModuleBaseAddress();
+        if (dwModuleBase)
+        {
+            m_dwIceMushroomFreezeAddress = dwModuleBase + ICE_MUSHROOM_FREEZE_OFFSET;
+            AddLog(_T("[寒冰菇冰冻] 目标地址: 0x%08X"), m_dwIceMushroomFreezeAddress);
+        }
+        else
+        {
+            AddLog(_T("[寒冰菇冰冻] 无法获取模块基址"));
+            return;
+        }
+    }
+
+    // 读取当前字节码
+    BYTE currentBytes[9] = { 0 };
+    SIZE_T bytesRead = 0;
+    if (ReadProcessMemory(m_hProcess, (LPCVOID)m_dwIceMushroomFreezeAddress, currentBytes, 9, &bytesRead))
+    {
+        AddLog(_T("[寒冰菇冰冻] 当前字节码: %02X %02X %02X %02X %02X %02X %02X %02X %02X"),
+            currentBytes[0], currentBytes[1], currentBytes[2], currentBytes[3],
+            currentBytes[4], currentBytes[5], currentBytes[6], currentBytes[7], currentBytes[8]);
+    }
+
+    // 1. 分配内存
+    if (!AllocateMemoryForIceMushroomFreeze())
+        return;
+
+    // 2. 写入自定义代码
+    if (!WriteCustomCodeForIceMushroomFreeze())
+    {
+        FreeIceMushroomFreezeMemory();
+        return;
+    }
+
+    // 3. 安装Hook
+    if (!InstallHookForIceMushroomFreeze())
+    {
+        FreeIceMushroomFreezeMemory();
+        return;
+    }
+
+    m_bIceMushroomFreezeEnabled = TRUE;
+    AddLog(_T("[寒冰菇冰冻] 成功启用！寒冰菇效果将一直持续"));
+}
+
+// 禁用寒冰菇一直冰冻
+void CPlantsCEDlg::DisableIceMushroomFreeze()
+{
+    if (!m_hProcess || !m_bAttached)
+    {
+        AddLog(_T("[寒冰菇冰冻] 错误: 未附加进程"));
+        return;
+    }
+
+    if (!m_bIceMushroomFreezeEnabled)
+    {
+        AddLog(_T("[寒冰菇冰冻] 已经禁用"));
+        return;
+    }
+
+    AddLog(_T("[寒冰菇冰冻] 正在禁用..."));
+
+    if (m_dwIceMushroomFreezeAddress == 0)
+    {
+        DWORD_PTR dwModuleBase = GetModuleBaseAddress();
+        if (dwModuleBase)
+            m_dwIceMushroomFreezeAddress = dwModuleBase + ICE_MUSHROOM_FREEZE_OFFSET;
+    }
+
+    // 恢复原始字节码 (9字节)
+    DWORD dwOldProtect = 0;
+    VirtualProtectEx(m_hProcess, (LPVOID)m_dwIceMushroomFreezeAddress, sizeof(ICE_MUSHROOM_FREEZE_ORIGINAL_BYTES),
+        PAGE_EXECUTE_READWRITE, &dwOldProtect);
+
+    SIZE_T bytesWritten = 0;
+    BOOL bResult = WriteProcessMemory(m_hProcess, (LPVOID)m_dwIceMushroomFreezeAddress,
+        ICE_MUSHROOM_FREEZE_ORIGINAL_BYTES, sizeof(ICE_MUSHROOM_FREEZE_ORIGINAL_BYTES), &bytesWritten);
+
+    VirtualProtectEx(m_hProcess, (LPVOID)m_dwIceMushroomFreezeAddress, sizeof(ICE_MUSHROOM_FREEZE_ORIGINAL_BYTES),
+        dwOldProtect, &dwOldProtect);
+
+    if (bResult && bytesWritten == sizeof(ICE_MUSHROOM_FREEZE_ORIGINAL_BYTES))
+    {
+        AddLog(_T("[寒冰菇冰冻] 成功禁用！寒冰菇效果将正常衰减"));
+        m_bIceMushroomFreezeEnabled = FALSE;
+        FreeIceMushroomFreezeMemory();
+    }
+    else
+    {
+        AddLog(_T("[寒冰菇冰冻] 恢复失败，错误码: %d"), GetLastError());
+    }
+}
+
+void CPlantsCEDlg::OnBnClickedMushroomfrozen()
+{
+    // TODO: 在此添加控件通知处理程序代码
+    int nCheck = m_checkIceMushroomFreeze.GetCheck();
+
+    if (!m_bAttached || !m_hProcess)
+    {
+        AddLog(_T("[寒冰菇冰冻] 错误: 请先附加进程"));
+        m_checkIceMushroomFreeze.SetCheck(m_bIceMushroomFreezeEnabled ? BST_CHECKED : BST_UNCHECKED);
+        return;
+    }
+
+    if (nCheck == BST_CHECKED)
+    {
+        EnableIceMushroomFreeze();
+    }
+    else
+    {
+        DisableIceMushroomFreeze();
     }
 
     // 保存配置

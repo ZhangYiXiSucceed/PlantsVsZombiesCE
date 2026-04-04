@@ -43,6 +43,12 @@
 #define IDC_SlotSel8                    1041
 #define IDC_SlotSel9                    1042
 #define IDC_SlotSel10                   1043
+#define IDC_MushroomFrozen              1044
+#define IDC_KillNormalZombies           1045
+#define IDC_KillEXZombies               1047
+#define IDC_ClearPlants                 1048
+#define IDC_Clear                       1049
+#define IDC_ClearTombstone              1049
 
 // Next default values for new objects
 // 
@@ -50,7 +56,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        130
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1035
+#define _APS_NEXT_CONTROL_VALUE         1050
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

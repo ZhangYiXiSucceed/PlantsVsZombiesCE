@@ -40,6 +40,11 @@ struct SunlightAddress {
 #define EXPLODE3_OFFSET 0x1D91F          // 全屏爆炸3偏移地址
 
 #define ZOMBIES_ALL_OUT_OFFSET 0x13E45    // 僵尸全部出动偏移地址
+#define POTATO_MINE_NO_CD_OFFSET 0x5FE53  // 土豆地雷无CD偏移地址
+#define CHOMPER_NO_CD_OFFSET 0x61565      // 食人花无CD偏移地址
+
+#define PLANT_INFINITE_HP_OFFSET 0x12FCF0  // 植物无限血偏移地址
+#define ICE_MUSHROOM_FREEZE_OFFSET 0x12B41F  // 寒冰菇一直冰冻偏移地址
 // CPlantsCEDlg 对话框
 class CPlantsCEDlg : public CDialogEx
 {
@@ -160,6 +165,29 @@ protected:
 	DWORD_PTR m_dwZombiesAllOutAllocated; // 分配的内存地址
 	BOOL m_bZombiesAllOutMemoryAllocated; // 内存是否已分配
 
+	CButton m_checkPotatoMineNoCD;       // 土豆地雷无CD复选框
+	BOOL m_bPotatoMineNoCDEnabled;       // 功能开关状态
+	DWORD_PTR m_dwPotatoMineNoCDAddress; // 目标地址 PlantsVsZombies_后台.exe+5FE53
+	DWORD_PTR m_dwPotatoMineNoCDAllocated; // 分配的内存地址
+	BOOL m_bPotatoMineNoCDMemoryAllocated; // 内存是否已分配
+
+	CButton m_checkChomperNoCD;          // 食人花无CD复选框
+	BOOL m_bChomperNoCDEnabled;          // 功能开关状态
+	DWORD_PTR m_dwChomperNoCDAddress;    // 目标地址 PlantsVsZombies_后台.exe+61565
+	DWORD_PTR m_dwChomperNoCDAllocated;  // 分配的内存地址
+	BOOL m_bChomperNoCDMemoryAllocated;  // 内存是否已分配
+
+	CButton m_checkPlantInfiniteHP;      // 植物无限血复选框
+	BOOL m_bPlantInfiniteHPEnabled;      // 功能开关状态
+	DWORD_PTR m_dwPlantInfiniteHPAddress; // 目标地址 PlantsVsZombies_后台.exe+12FCF0
+	DWORD_PTR m_dwPlantInfiniteHPAllocated; // 分配的内存地址
+	BOOL m_bPlantInfiniteHPMemoryAllocated; // 内存是否已分配
+
+	CButton m_checkIceMushroomFreeze;    // 寒冰菇一直冰冻复选框
+	BOOL m_bIceMushroomFreezeEnabled;    // 功能开关状态
+	DWORD_PTR m_dwIceMushroomFreezeAddress; // 目标地址 PlantsVsZombies_后台.exe+12B41F
+	DWORD_PTR m_dwIceMushroomFreezeAllocated; // 分配的内存地址
+	BOOL m_bIceMushroomFreezeMemoryAllocated; // 内存是否已分配
 
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();
@@ -283,6 +311,42 @@ public:
 	BOOL WriteCustomCodeForZombiesAllOut(); // 写入自定义代码
 	BOOL InstallHookForZombiesAllOut();    // 安装Hook
 	void FreeZombiesAllOutMemory();        // 释放内存
+	afx_msg void OnBnClickedPotatominenocd();
+
+	// 函数声明
+	void EnablePotatoMineNoCD();          // 启用土豆地雷无CD
+	void DisablePotatoMineNoCD();         // 禁用土豆地雷无CD
+	BOOL AllocateMemoryForPotatoMineNoCD(); // 分配内存
+	BOOL WriteCustomCodeForPotatoMineNoCD(); // 写入自定义代码
+	BOOL InstallHookForPotatoMineNoCD();    // 安装Hook
+	void FreePotatoMineNoCDMemory();        // 释放内存
+
+	// 函数声明
+    void EnableChomperNoCD();             // 启用食人花无CD
+    void DisableChomperNoCD();            // 禁用食人花无CD
+    BOOL AllocateMemoryForChomperNoCD();  // 分配内存
+    BOOL WriteCustomCodeForChomperNoCD(); // 写入自定义代码
+    BOOL InstallHookForChomperNoCD();     // 安装Hook
+    void FreeChomperNoCDMemory();         // 释放内存
+	afx_msg void OnBnClickedEatzombiesnocd();
+
+	// 函数声明
+	void EnablePlantInfiniteHP();         // 启用植物无限血
+	void DisablePlantInfiniteHP();        // 禁用植物无限血
+	BOOL AllocateMemoryForPlantInfiniteHP(); // 分配内存
+	BOOL WriteCustomCodeForPlantInfiniteHP(); // 写入自定义代码
+	BOOL InstallHookForPlantInfiniteHP();    // 安装Hook
+	void FreePlantInfiniteHPMemory();        // 释放内存
+	afx_msg void OnBnClickedPlantinfinitehp();
+
+	//函数声明
+    void EnableIceMushroomFreeze();       // 启用寒冰菇一直冰冻
+    void DisableIceMushroomFreeze();      // 禁用寒冰菇一直冰冻
+    BOOL AllocateMemoryForIceMushroomFreeze(); // 分配内存
+    BOOL WriteCustomCodeForIceMushroomFreeze(); // 写入自定义代码
+    BOOL InstallHookForIceMushroomFreeze();    // 安装Hook
+    void FreeIceMushroomFreezeMemory();        // 释放内存
+	afx_msg void OnBnClickedMushroomfrozen();
 };
 
 
