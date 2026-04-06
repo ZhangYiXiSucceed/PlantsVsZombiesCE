@@ -743,174 +743,6 @@ BOOL CPlantsCEDlg::FindProcessId(LPCTSTR szProcessName, DWORD& dwProcessId)
     return bFound;
 }
 
-// 添加日志
-void CPlantsCEDlg::AddLog(LPCTSTR szFormat, ...)
-{
-    CString strLog;
-    va_list args;
-    va_start(args, szFormat);
-    strLog.FormatV(szFormat, args);
-    va_end(args);
-
-    CTime time = CTime::GetCurrentTime();
-    CString strTime = time.Format(_T("[%H:%M:%S] "));
-
-    m_listLog.AddString(strTime + strLog);
-
-    int nCount = m_listLog.GetCount();
-    if (nCount > 0)
-        m_listLog.SetCurSel(nCount - 1);
-}
-
-// 读取指针链：[[baseAddress] + offset1] + offset2
-DWORD_PTR CPlantsCEDlg::ReadPointerChain(DWORD_PTR baseAddress, DWORD_PTR offset1, DWORD_PTR offset2)
-{
-    if (!m_hProcess)
-        return 0;
-
-    DWORD_PTR ptr1 = 0;
-    SIZE_T bytesRead = 0;
-
-    // 第一次读取：基址 -> 指针1
-    if (!ReadProcessMemory(m_hProcess, (LPCVOID)baseAddress, &ptr1, sizeof(DWORD_PTR), &bytesRead))
-    {
-        AddLog(_T("读取基址失败，错误码: %d"), GetLastError());
-        return 0;
-    }
-
-    if (bytesRead != sizeof(DWORD_PTR))
-    {
-        AddLog(_T("读取基址数据不完整"));
-        return 0;
-    }
-
-    AddLog(_T("读取基址[0x%08X] -> 指针1: 0x%08X"), baseAddress, ptr1);
-
-    // 第一次偏移计算
-    DWORD_PTR addr1 = ptr1 + offset1;
-    DWORD_PTR ptr2 = 0;
-
-    // 第二次读取：指针1+偏移1 -> 指针2
-    if (!ReadProcessMemory(m_hProcess, (LPCVOID)addr1, &ptr2, sizeof(DWORD_PTR), &bytesRead))
-    {
-        AddLog(_T("读取第一层偏移失败，错误码: %d"), GetLastError());
-        return 0;
-    }
-
-    if (bytesRead != sizeof(DWORD_PTR))
-    {
-        AddLog(_T("读取第一层偏移数据不完整"));
-        return 0;
-    }
-
-    AddLog(_T("读取地址[0x%08X] -> 指针2: 0x%08X"), addr1, ptr2);
-
-    // 第二次偏移计算，得到最终阳光地址
-    DWORD_PTR finalAddr = ptr2 + offset2;
-
-    AddLog(_T("最终阳光地址: 0x%08X"), finalAddr);
-
-    return finalAddr;
-}
-
-// 读取阳光值
-DWORD CPlantsCEDlg::ReadSunlightValue()
-{
-    if (!m_hProcess || !m_bAttached)
-    {
-        AddLog(_T("错误: 未附加进程"));
-        return 0;
-    }
-
-    // 获取最终阳光地址
-    m_sunlightAddr.finalAddress = ReadPointerChain(
-        m_sunlightAddr.baseAddress,
-        m_sunlightAddr.offset1,
-        m_sunlightAddr.offset2
-    );
-
-    if (m_sunlightAddr.finalAddress == 0)
-    {
-        AddLog(_T("无法获取阳光地址"));
-        return 0;
-    }
-
-    // 读取阳光值
-    DWORD dwSunlight = 0;
-    SIZE_T bytesRead = 0;
-
-    if (ReadProcessMemory(m_hProcess, (LPCVOID)m_sunlightAddr.finalAddress,
-        &dwSunlight, sizeof(DWORD), &bytesRead))
-    {
-        if (bytesRead == sizeof(DWORD))
-        {
-            AddLog(_T("当前阳光值: %d"), dwSunlight);
-            return dwSunlight;
-        }
-    }
-
-    AddLog(_T("读取阳光值失败，错误码: %d"), GetLastError());
-    return 0;
-}
-
-// 写入阳光值
-BOOL CPlantsCEDlg::WriteSunlightValue(DWORD dwNewValue)
-{
-    if (!m_hProcess || !m_bAttached)
-    {
-        AddLog(_T("错误: 未附加进程"));
-        return FALSE;
-    }
-
-    if (m_sunlightAddr.finalAddress == 0)
-    {
-        AddLog(_T("错误: 未获取阳光地址，请先读取阳光值"));
-        return FALSE;
-    }
-
-    // 修改内存保护属性
-    DWORD dwOldProtect = 0;
-    if (!VirtualProtectEx(m_hProcess, (LPVOID)m_sunlightAddr.finalAddress,
-        sizeof(DWORD), PAGE_EXECUTE_READWRITE, &dwOldProtect))
-    {
-        AddLog(_T("修改内存保护失败，错误码: %d"), GetLastError());
-        // 继续尝试写入
-    }
-
-    // 写入新值
-    SIZE_T bytesWritten = 0;
-    BOOL bResult = WriteProcessMemory(m_hProcess, (LPVOID)m_sunlightAddr.finalAddress,
-        &dwNewValue, sizeof(DWORD), &bytesWritten);
-
-    // 恢复内存保护属性
-    VirtualProtectEx(m_hProcess, (LPVOID)m_sunlightAddr.finalAddress,
-        sizeof(DWORD), dwOldProtect, &dwOldProtect);
-
-    if (bResult && bytesWritten == sizeof(DWORD))
-    {
-        AddLog(_T("成功修改阳光值: %d -> %d"),
-            ReadSunlightValue() - dwNewValue + dwNewValue, dwNewValue);
-
-        // 验证修改
-        DWORD dwVerify = ReadSunlightValue();
-        if (dwVerify == dwNewValue)
-        {
-            AddLog(_T("验证成功: 阳光值已更新为 %d"), dwVerify);
-            return TRUE;
-        }
-        else
-        {
-            AddLog(_T("警告: 验证失败，当前值为 %d"), dwVerify);
-            return FALSE;
-        }
-    }
-    else
-    {
-        AddLog(_T("写入失败，错误码: %d"), GetLastError());
-        return FALSE;
-    }
-}
-
 // 附加进程
 BOOL CPlantsCEDlg::AttachToProcess()
 {
@@ -1117,6 +949,175 @@ void CPlantsCEDlg::OnBnClickedAttachprocess()
         OnBnClickedReadSunValue();
     }
 }
+
+// 添加日志
+void CPlantsCEDlg::AddLog(LPCTSTR szFormat, ...)
+{
+    CString strLog;
+    va_list args;
+    va_start(args, szFormat);
+    strLog.FormatV(szFormat, args);
+    va_end(args);
+
+    CTime time = CTime::GetCurrentTime();
+    CString strTime = time.Format(_T("[%H:%M:%S] "));
+
+    m_listLog.AddString(strTime + strLog);
+
+    int nCount = m_listLog.GetCount();
+    if (nCount > 0)
+        m_listLog.SetCurSel(nCount - 1);
+}
+
+// 读取指针链：[[baseAddress] + offset1] + offset2
+DWORD_PTR CPlantsCEDlg::ReadPointerChain(DWORD_PTR baseAddress, DWORD_PTR offset1, DWORD_PTR offset2)
+{
+    if (!m_hProcess)
+        return 0;
+
+    DWORD_PTR ptr1 = 0;
+    SIZE_T bytesRead = 0;
+
+    // 第一次读取：基址 -> 指针1
+    if (!ReadProcessMemory(m_hProcess, (LPCVOID)baseAddress, &ptr1, sizeof(DWORD_PTR), &bytesRead))
+    {
+        AddLog(_T("读取基址失败，错误码: %d"), GetLastError());
+        return 0;
+    }
+
+    if (bytesRead != sizeof(DWORD_PTR))
+    {
+        AddLog(_T("读取基址数据不完整"));
+        return 0;
+    }
+
+    AddLog(_T("读取基址[0x%08X] -> 指针1: 0x%08X"), baseAddress, ptr1);
+
+    // 第一次偏移计算
+    DWORD_PTR addr1 = ptr1 + offset1;
+    DWORD_PTR ptr2 = 0;
+
+    // 第二次读取：指针1+偏移1 -> 指针2
+    if (!ReadProcessMemory(m_hProcess, (LPCVOID)addr1, &ptr2, sizeof(DWORD_PTR), &bytesRead))
+    {
+        AddLog(_T("读取第一层偏移失败，错误码: %d"), GetLastError());
+        return 0;
+    }
+
+    if (bytesRead != sizeof(DWORD_PTR))
+    {
+        AddLog(_T("读取第一层偏移数据不完整"));
+        return 0;
+    }
+
+    AddLog(_T("读取地址[0x%08X] -> 指针2: 0x%08X"), addr1, ptr2);
+
+    // 第二次偏移计算，得到最终阳光地址
+    DWORD_PTR finalAddr = ptr2 + offset2;
+
+    AddLog(_T("最终阳光地址: 0x%08X"), finalAddr);
+
+    return finalAddr;
+}
+
+// 读取阳光值
+DWORD CPlantsCEDlg::ReadSunlightValue()
+{
+    if (!m_hProcess || !m_bAttached)
+    {
+        AddLog(_T("错误: 未附加进程"));
+        return 0;
+    }
+
+    // 获取最终阳光地址
+    m_sunlightAddr.finalAddress = ReadPointerChain(
+        m_sunlightAddr.baseAddress,
+        m_sunlightAddr.offset1,
+        m_sunlightAddr.offset2
+    );
+
+    if (m_sunlightAddr.finalAddress == 0)
+    {
+        AddLog(_T("无法获取阳光地址"));
+        return 0;
+    }
+
+    // 读取阳光值
+    DWORD dwSunlight = 0;
+    SIZE_T bytesRead = 0;
+
+    if (ReadProcessMemory(m_hProcess, (LPCVOID)m_sunlightAddr.finalAddress,
+        &dwSunlight, sizeof(DWORD), &bytesRead))
+    {
+        if (bytesRead == sizeof(DWORD))
+        {
+            AddLog(_T("当前阳光值: %d"), dwSunlight);
+            return dwSunlight;
+        }
+    }
+
+    AddLog(_T("读取阳光值失败，错误码: %d"), GetLastError());
+    return 0;
+}
+
+// 写入阳光值
+BOOL CPlantsCEDlg::WriteSunlightValue(DWORD dwNewValue)
+{
+    if (!m_hProcess || !m_bAttached)
+    {
+        AddLog(_T("错误: 未附加进程"));
+        return FALSE;
+    }
+
+    if (m_sunlightAddr.finalAddress == 0)
+    {
+        AddLog(_T("错误: 未获取阳光地址，请先读取阳光值"));
+        return FALSE;
+    }
+
+    // 修改内存保护属性
+    DWORD dwOldProtect = 0;
+    if (!VirtualProtectEx(m_hProcess, (LPVOID)m_sunlightAddr.finalAddress,
+        sizeof(DWORD), PAGE_EXECUTE_READWRITE, &dwOldProtect))
+    {
+        AddLog(_T("修改内存保护失败，错误码: %d"), GetLastError());
+        // 继续尝试写入
+    }
+
+    // 写入新值
+    SIZE_T bytesWritten = 0;
+    BOOL bResult = WriteProcessMemory(m_hProcess, (LPVOID)m_sunlightAddr.finalAddress,
+        &dwNewValue, sizeof(DWORD), &bytesWritten);
+
+    // 恢复内存保护属性
+    VirtualProtectEx(m_hProcess, (LPVOID)m_sunlightAddr.finalAddress,
+        sizeof(DWORD), dwOldProtect, &dwOldProtect);
+
+    if (bResult && bytesWritten == sizeof(DWORD))
+    {
+        AddLog(_T("成功修改阳光值: %d -> %d"),
+            ReadSunlightValue() - dwNewValue + dwNewValue, dwNewValue);
+
+        // 验证修改
+        DWORD dwVerify = ReadSunlightValue();
+        if (dwVerify == dwNewValue)
+        {
+            AddLog(_T("验证成功: 阳光值已更新为 %d"), dwVerify);
+            return TRUE;
+        }
+        else
+        {
+            AddLog(_T("警告: 验证失败，当前值为 %d"), dwVerify);
+            return FALSE;
+        }
+    }
+    else
+    {
+        AddLog(_T("写入失败，错误码: %d"), GetLastError());
+        return FALSE;
+    }
+}
+
 
 void CPlantsCEDlg::OnBnClickedReadSunValue()
 {
