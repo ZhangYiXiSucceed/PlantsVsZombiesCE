@@ -4,6 +4,7 @@
     <CheatEntry>
       <ID>1</ID>
       <Description>"大阳光增加1000"</Description>
+      <LastState/>
       <VariableType>Auto Assembler Script</VariableType>
       <AssemblerScript>[ENABLE]
 //code from here to '[DISABLE]' will be used to enable the cheat
@@ -39,6 +40,7 @@ db B9 19 00 00 00
     <CheatEntry>
       <ID>3</ID>
       <Description>"小阳光增加2000"</Description>
+      <LastState/>
       <VariableType>Auto Assembler Script</VariableType>
       <AssemblerScript>[ENABLE]
 //code from here to '[DISABLE]' will be used to enable the cheat
@@ -76,6 +78,7 @@ db 8D 48 0A EB 0E
     <CheatEntry>
       <ID>4</ID>
       <Description>"阳光最大值5000000"</Description>
+      <LastState/>
       <VariableType>Auto Assembler Script</VariableType>
       <AssemblerScript>[ENABLE]
 //code from here to '[DISABLE]' will be used to enable the cheat
@@ -116,6 +119,7 @@ db 81 F9 06 27 00 00 7E 78 C7 80 60 55 00 00 06 27 00 00
     <CheatEntry>
       <ID>5</ID>
       <Description>"种植植物不消化阳光"</Description>
+      <LastState/>
       <VariableType>Auto Assembler Script</VariableType>
       <AssemblerScript>[ENABLE]
 //code from here to '[DISABLE]' will be used to enable the cheat
@@ -154,6 +158,7 @@ db 2B F3 89 B7 60 55 00 00
     <CheatEntry>
       <ID>7</ID>
       <Description>"种植植物无CD"</Description>
+      <LastState/>
       <VariableType>Auto Assembler Script</VariableType>
       <AssemblerScript>[ENABLE]
 //code from here to '[DISABLE]' will be used to enable the cheat
@@ -192,6 +197,7 @@ db 7E 14 C7 47 24 00 00 00 00
     <CheatEntry>
       <ID>8</ID>
       <Description>"初始值10000"</Description>
+      <LastState/>
       <VariableType>Auto Assembler Script</VariableType>
       <AssemblerScript>[ENABLE]
 //code from here to '[DISABLE]' will be used to enable the cheat
@@ -228,6 +234,7 @@ db C7 85 60 55 00 00 32 00 00 00
     <CheatEntry>
       <ID>9</ID>
       <Description>"秒杀普通僵尸"</Description>
+      <LastState/>
       <VariableType>Auto Assembler Script</VariableType>
       <AssemblerScript>[ENABLE]
 //code from here to '[DISABLE]' will be used to enable the cheat
@@ -260,12 +267,13 @@ dealloc(newmem)
 db 89 BD C8 00 00 00
 //mov [ebp+000000C8],edi
 </AssemblerScript>
-      <CheatEntries>
-        <CheatEntry>
-          <ID>11</ID>
-          <Description>"秒杀报纸僵尸"</Description>
-          <VariableType>Auto Assembler Script</VariableType>
-          <AssemblerScript>[ENABLE]
+    </CheatEntry>
+    <CheatEntry>
+      <ID>11</ID>
+      <Description>"秒杀报纸僵尸"</Description>
+      <LastState/>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
 //code from here to '[DISABLE]' will be used to enable the cheat
 alloc(newmem,2048)
 label(returnhere)
@@ -296,12 +304,11 @@ dealloc(newmem)
 db 29 86 DC 00 00 00
 //sub [esi+000000DC],eax
 </AssemblerScript>
-        </CheatEntry>
-      </CheatEntries>
     </CheatEntry>
     <CheatEntry>
       <ID>10</ID>
       <Description>"秒杀高级僵尸"</Description>
+      <LastState/>
       <VariableType>Auto Assembler Script</VariableType>
       <AssemblerScript>[ENABLE]
 //code from here to '[DISABLE]' will be used to enable the cheat
@@ -338,6 +345,7 @@ db 89 8D D0 00 00 00
     <CheatEntry>
       <ID>12</ID>
       <Description>"植物无限血"</Description>
+      <LastState/>
       <VariableType>Auto Assembler Script</VariableType>
       <AssemblerScript>[ENABLE]
 //code from here to '[DISABLE]' will be used to enable the cheat
@@ -376,6 +384,7 @@ db 83 46 40 FC 8B 4E 40
     <CheatEntry>
       <ID>13</ID>
       <Description>"获取无限阳光"</Description>
+      <LastState/>
       <VariableType>Auto Assembler Script</VariableType>
       <AssemblerScript>[ENABLE]
 //code from here to '[DISABLE]' will be used to enable the cheat
@@ -435,6 +444,7 @@ db 89 47 58 8B 07
     <CheatEntry>
       <ID>16</ID>
       <Description>"种植初始阳光无限"</Description>
+      <LastState/>
       <VariableType>Auto Assembler Script</VariableType>
       <AssemblerScript>[ENABLE]
 //code from here to '[DISABLE]' will be used to enable the cheat
@@ -472,6 +482,7 @@ db 89 43 58 EB 14
     <CheatEntry>
       <ID>20</ID>
       <Description>"快速自动收集阳光"</Description>
+      <LastState/>
       <VariableType>Auto Assembler Script</VariableType>
       <AssemblerScript>[ENABLE]
 //code from here to '[DISABLE]' will be used to enable the cheat
@@ -512,6 +523,7 @@ db 75 08 53 E8 29 F5 FF FF
     <CheatEntry>
       <ID>21</ID>
       <Description>"无限发射"</Description>
+      <LastState/>
       <VariableType>Auto Assembler Script</VariableType>
       <AssemblerScript>[ENABLE]
 //code from here to '[DISABLE]' will be used to enable the cheat
@@ -548,6 +560,7 @@ db 89 87 90 00 00 00
     <CheatEntry>
       <ID>23</ID>
       <Description>"快速发射"</Description>
+      <LastState/>
       <VariableType>Auto Assembler Script</VariableType>
       <AssemblerScript>[ENABLE]
 //code from here to '[DISABLE]' will be used to enable the cheat
@@ -584,6 +597,7 @@ db 0F 85 98 FE FF FF
     <CheatEntry>
       <ID>26</ID>
       <Description>"僵尸全部出动"</Description>
+      <LastState/>
       <VariableType>Auto Assembler Script</VariableType>
       <AssemblerScript>[ENABLE]
 //code from here to '[DISABLE]' will be used to enable the cheat
@@ -621,6 +635,7 @@ db 83 87 9C 55 00 00 FF
     <CheatEntry>
       <ID>37</ID>
       <Description>"投掷僵尸无伤"</Description>
+      <LastState/>
       <VariableType>Auto Assembler Script</VariableType>
       <AssemblerScript>[ENABLE]
 //code from here to '[DISABLE]' will be used to enable the cheat
@@ -779,6 +794,7 @@ db 29 4E 40 83 F8 19
     <CheatEntry>
       <ID>38</ID>
       <Description>"土豆地雷无CD"</Description>
+      <LastState/>
       <VariableType>Auto Assembler Script</VariableType>
       <AssemblerScript>[ENABLE]
 //code from here to '[DISABLE]' will be used to enable the cheat
@@ -815,6 +831,7 @@ db 0F 85 FA 01 00 00
     <CheatEntry>
       <ID>39</ID>
       <Description>"食僵尸花无CD"</Description>
+      <LastState/>
       <VariableType>Auto Assembler Script</VariableType>
       <AssemblerScript>[ENABLE]
 //code from here to '[DISABLE]' will be used to enable the cheat
@@ -854,6 +871,7 @@ db 75 5F 6A 14 56
     <CheatEntry>
       <ID>40</ID>
       <Description>"寒冰菇一直冰冻"</Description>
+      <LastState/>
       <VariableType>Auto Assembler Script</VariableType>
       <AssemblerScript>[ENABLE]
 //code from here to '[DISABLE]' will be used to enable the cheat
@@ -892,6 +910,7 @@ db 83 C0 FF 89 87 B4 00 00 00
     <CheatEntry>
       <ID>46</ID>
       <Description>"寒冰射手一直冰冻"</Description>
+      <LastState/>
       <VariableType>Auto Assembler Script</VariableType>
       <AssemblerScript>[ENABLE]
 //code from here to '[DISABLE]' will be used to enable the cheat
@@ -925,6 +944,275 @@ dealloc(newmem)
 db 83 C0 FF 89 87 AC 00 00 00
 //add eax,-01
 //mov [edi+000000AC],eax
+</AssemblerScript>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>41</ID>
+      <Description>"清除所有植物"</Description>
+      <LastState/>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+//code from here to '[DISABLE]' will be used to enable the cheat
+alloc(newmem,2048)
+label(returnhere)
+label(originalcode)
+label(exit)
+
+newmem: //this is allocated memory, you have read,write,execute access
+//place your code here
+
+originalcode:
+nop
+movzx edx,word ptr [eax+00000148]
+
+exit:
+jmp returnhere
+
+"PlantsVsZombies_后台.exe"+1BB2E:
+jmp newmem
+nop 4
+returnhere:
+
+
+ 
+ 
+[DISABLE]
+//code from here till the end of the code will be used to disable the cheat
+dealloc(newmem)
+"PlantsVsZombies_后台.exe"+1BB2E:
+db 74 B0 0F B7 90 48 01 00 00
+//je PlantsVsZombies_后台.exe+1BAE0
+//movzx edx,word ptr [eax+00000148]
+</AssemblerScript>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>42</ID>
+      <Description>"清除所有墓碑"</Description>
+      <LastState/>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+//code from here to '[DISABLE]' will be used to enable the cheat
+alloc(newmem,2048)
+label(returnhere)
+label(originalcode)
+label(exit)
+
+newmem: //this is allocated memory, you have read,write,execute access
+//place your code here
+
+originalcode:
+nop
+movzx edi,word ptr [eax+000000E8]
+
+exit:
+jmp returnhere
+
+"PlantsVsZombies_后台.exe"+1BE28:
+jmp newmem
+nop 4
+returnhere:
+
+
+ 
+ 
+[DISABLE]
+//code from here till the end of the code will be used to disable the cheat
+dealloc(newmem)
+"PlantsVsZombies_后台.exe"+1BE28:
+db 74 96 0F B7 B8 E8 00 00 00
+//je PlantsVsZombies_后台.exe+1BDC0
+//movzx edi,word ptr [eax+000000E8]
+</AssemblerScript>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>43</ID>
+      <Description>"僵尸无视子弹"</Description>
+      <LastState/>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+//code from here to '[DISABLE]' will be used to enable the cheat
+alloc(newmem,2048)
+label(returnhere)
+label(originalcode)
+label(exit)
+
+newmem: //this is allocated memory, you have read,write,execute access
+//place your code here
+
+originalcode:
+mov [ebp+000000C8],270
+
+exit:
+jmp returnhere
+
+"PlantsVsZombies_后台.exe"+131319:
+jmp newmem
+nop
+returnhere:
+
+
+ 
+ 
+[DISABLE]
+//code from here till the end of the code will be used to disable the cheat
+dealloc(newmem)
+"PlantsVsZombies_后台.exe"+131319:
+db 89 BD C8 00 00 00
+//mov [ebp+000000C8],edi
+</AssemblerScript>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>44</ID>
+      <Description>"全屏爆炸1"</Description>
+      <LastState/>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+//code from here to '[DISABLE]' will be used to enable the cheat
+alloc(newmem,2048)
+label(returnhere)
+label(originalcode)
+label(exit)
+
+newmem: //this is allocated memory, you have read,write,execute access
+//place your code here
+
+originalcode:
+nop
+neg ecx
+cmp eax,ecx
+
+exit:
+jmp returnhere
+
+"PlantsVsZombies_后台.exe"+1D8FF:
+jmp newmem
+nop
+returnhere:
+
+
+ 
+ 
+[DISABLE]
+//code from here till the end of the code will be used to disable the cheat
+dealloc(newmem)
+"PlantsVsZombies_后台.exe"+1D8FF:
+db 7F 3E F7 D9 3B C1
+//jg PlantsVsZombies_后台.exe+1D93F
+//neg ecx
+//cmp eax,ecx
+</AssemblerScript>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>45</ID>
+      <Description>"全屏爆炸2"</Description>
+      <LastState/>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+//code from here to '[DISABLE]' will be used to enable the cheat
+alloc(newmem,2048)
+label(returnhere)
+label(originalcode)
+label(exit)
+
+newmem: //this is allocated memory, you have read,write,execute access
+//place your code here
+
+originalcode:
+nop
+mov ecx,[ebp+18]
+
+exit:
+jmp returnhere
+
+"PlantsVsZombies_后台.exe"+1D905:
+jmp newmem
+returnhere:
+
+
+ 
+ 
+[DISABLE]
+//code from here till the end of the code will be used to disable the cheat
+dealloc(newmem)
+"PlantsVsZombies_后台.exe"+1D905:
+db 7C 38 8B 4D 18
+//jl PlantsVsZombies_后台.exe+1D93F
+//mov ecx,[ebp+18]
+</AssemblerScript>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>78</ID>
+      <Description>"全屏爆炸3"</Description>
+      <LastState/>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+//code from here to '[DISABLE]' will be used to enable the cheat
+alloc(newmem,2048)
+label(returnhere)
+label(originalcode)
+label(exit)
+
+newmem: //this is allocated memory, you have read,write,execute access
+//place your code here
+
+originalcode:
+nop
+cmp byte ptr [ebp+20],00
+
+exit:
+jmp returnhere
+
+"PlantsVsZombies_后台.exe"+1D91F:
+jmp newmem
+nop
+returnhere:
+
+
+ 
+ 
+[DISABLE]
+//code from here till the end of the code will be used to disable the cheat
+dealloc(newmem)
+"PlantsVsZombies_后台.exe"+1D91F:
+db 74 1E 80 7D 20 00
+//je PlantsVsZombies_后台.exe+1D93F
+//cmp byte ptr [ebp+20],00
+</AssemblerScript>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>79</ID>
+      <Description>"爆炸无伤"</Description>
+      <LastState/>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+//code from here to '[DISABLE]' will be used to enable the cheat
+alloc(newmem,2048)
+label(returnhere)
+label(originalcode)
+label(exit)
+
+newmem: //this is allocated memory, you have read,write,execute access
+//place your code here
+
+originalcode:
+nop
+
+exit:
+jmp returnhere
+
+"PlantsVsZombies_后台.exe"+1D929:
+jmp newmem
+returnhere:
+
+
+ 
+ 
+[DISABLE]
+//code from here till the end of the code will be used to disable the cheat
+dealloc(newmem)
+"PlantsVsZombies_后台.exe"+1D929:
+db E8 42 52 11 00
+//call PlantsVsZombies_后台.exe+132B70
 </AssemblerScript>
     </CheatEntry>
   </CheatEntries>
@@ -1021,6 +1309,234 @@ db 83 C0 FF 89 87 AC 00 00 00
         <Byte>AC</Byte>
         <Byte>00</Byte>
         <Byte>00</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Change of jne PlantsVsZombies_后台.exe+32986</Description>
+      <AddressString>PlantsVsZombies_后台.exe+32088</AddressString>
+      <Before>
+        <Byte>E9</Byte>
+        <Byte>80</Byte>
+        <Byte>7D</Byte>
+        <Byte>38</Byte>
+        <Byte>00</Byte>
+      </Before>
+      <Actual>
+        <Byte>0F</Byte>
+        <Byte>85</Byte>
+        <Byte>F8</Byte>
+        <Byte>08</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+      </Actual>
+      <After>
+        <Byte>D9</Byte>
+        <Byte>45</Byte>
+        <Byte>24</Byte>
+        <Byte>8B</Byte>
+        <Byte>55</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Change of jne PlantsVsZombies_后台.exe+31599</Description>
+      <AddressString>PlantsVsZombies_后台.exe+3158F</AddressString>
+      <Before>
+        <Byte>15</Byte>
+        <Byte>80</Byte>
+        <Byte>7B</Byte>
+        <Byte>50</Byte>
+        <Byte>00</Byte>
+      </Before>
+      <Actual>
+        <Byte>75</Byte>
+        <Byte>08</Byte>
+      </Actual>
+      <After>
+        <Byte>53</Byte>
+        <Byte>E8</Byte>
+        <Byte>29</Byte>
+        <Byte>F5</Byte>
+        <Byte>FF</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Change of jne PlantsVsZombies_后台.exe+615C6</Description>
+      <AddressString>PlantsVsZombies_后台.exe+61565</AddressString>
+      <Before>
+        <Byte>3F</Byte>
+        <Byte>83</Byte>
+        <Byte>7F</Byte>
+        <Byte>54</Byte>
+        <Byte>00</Byte>
+      </Before>
+      <Actual>
+        <Byte>75</Byte>
+        <Byte>5F</Byte>
+      </Actual>
+      <After>
+        <Byte>6A</Byte>
+        <Byte>14</Byte>
+        <Byte>56</Byte>
+        <Byte>E8</Byte>
+        <Byte>A1</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Change of jne PlantsVsZombies_后台.exe+60053</Description>
+      <AddressString>PlantsVsZombies_后台.exe+5FE53</AddressString>
+      <Before>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>39</Byte>
+        <Byte>47</Byte>
+        <Byte>54</Byte>
+      </Before>
+      <Actual>
+        <Byte>0F</Byte>
+        <Byte>85</Byte>
+        <Byte>FA</Byte>
+        <Byte>01</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+      </Actual>
+      <After>
+        <Byte>8B</Byte>
+        <Byte>47</Byte>
+        <Byte>20</Byte>
+        <Byte>6A</Byte>
+        <Byte>31</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Change of je PlantsVsZombies_后台.exe+1BAE0</Description>
+      <AddressString>PlantsVsZombies_后台.exe+1BB2E</AddressString>
+      <Before>
+        <Byte>98</Byte>
+        <Byte>41</Byte>
+        <Byte>01</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+      </Before>
+      <Actual>
+        <Byte>74</Byte>
+        <Byte>B0</Byte>
+      </Actual>
+      <After>
+        <Byte>0F</Byte>
+        <Byte>B7</Byte>
+        <Byte>90</Byte>
+        <Byte>48</Byte>
+        <Byte>01</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Change of je PlantsVsZombies_后台.exe+1D93F</Description>
+      <AddressString>PlantsVsZombies_后台.exe+1D91F</AddressString>
+      <Before>
+        <Byte>83</Byte>
+        <Byte>C4</Byte>
+        <Byte>04</Byte>
+        <Byte>84</Byte>
+        <Byte>C0</Byte>
+      </Before>
+      <Actual>
+        <Byte>74</Byte>
+        <Byte>1E</Byte>
+      </Actual>
+      <After>
+        <Byte>80</Byte>
+        <Byte>7D</Byte>
+        <Byte>20</Byte>
+        <Byte>00</Byte>
+        <Byte>74</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Change of je PlantsVsZombies_后台.exe+1D930</Description>
+      <AddressString>PlantsVsZombies_后台.exe+1D925</AddressString>
+      <Before>
+        <Byte>90</Byte>
+        <Byte>80</Byte>
+        <Byte>7D</Byte>
+        <Byte>20</Byte>
+        <Byte>00</Byte>
+      </Before>
+      <Actual>
+        <Byte>74</Byte>
+        <Byte>09</Byte>
+      </Actual>
+      <After>
+        <Byte>8B</Byte>
+        <Byte>CE</Byte>
+        <Byte>E8</Byte>
+        <Byte>42</Byte>
+        <Byte>52</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Change of jmp PlantsVsZombies_后台.exe+1D93F</Description>
+      <AddressString>PlantsVsZombies_后台.exe+1D92E</AddressString>
+      <Before>
+        <Byte>E8</Byte>
+        <Byte>42</Byte>
+        <Byte>52</Byte>
+        <Byte>11</Byte>
+        <Byte>00</Byte>
+      </Before>
+      <Actual>
+        <Byte>EB</Byte>
+        <Byte>0F</Byte>
+      </Actual>
+      <After>
+        <Byte>68</Byte>
+        <Byte>08</Byte>
+        <Byte>07</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Change of jg PlantsVsZombies_后台.exe+1D93F</Description>
+      <AddressString>PlantsVsZombies_后台.exe+1D8FF</AddressString>
+      <Before>
+        <Byte>8B</Byte>
+        <Byte>4D</Byte>
+        <Byte>1C</Byte>
+        <Byte>3B</Byte>
+        <Byte>C1</Byte>
+      </Before>
+      <Actual>
+        <Byte>7F</Byte>
+        <Byte>3E</Byte>
+      </Actual>
+      <After>
+        <Byte>F7</Byte>
+        <Byte>D9</Byte>
+        <Byte>3B</Byte>
+        <Byte>C1</Byte>
+        <Byte>7C</Byte>
+      </After>
+    </CodeEntry>
+    <CodeEntry>
+      <Description>Change of jl PlantsVsZombies_后台.exe+1D93F</Description>
+      <AddressString>PlantsVsZombies_后台.exe+1D905</AddressString>
+      <Before>
+        <Byte>90</Byte>
+        <Byte>F7</Byte>
+        <Byte>D9</Byte>
+        <Byte>3B</Byte>
+        <Byte>C1</Byte>
+      </Before>
+      <Actual>
+        <Byte>7C</Byte>
+        <Byte>38</Byte>
+      </Actual>
+      <After>
+        <Byte>8B</Byte>
+        <Byte>4D</Byte>
+        <Byte>18</Byte>
+        <Byte>8B</Byte>
+        <Byte>55</Byte>
       </After>
     </CodeEntry>
   </CheatCodes>
