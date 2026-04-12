@@ -103,7 +103,7 @@ void CPlantsCEDlg::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_EatZombiesNoCD, m_checkChomperNoCD);
     DDX_Control(pDX, IDC_PlantInfiniteHP, m_checkPlantInfiniteHP);
     DDX_Control(pDX, IDC_MushroomFrozen, m_checkIceMushroomFreeze);
-    
+    DDX_Control(pDX, IDC_RepeatPlants, m_checkRepeatPlant);
 }
 
 BEGIN_MESSAGE_MAP(CPlantsCEDlg, CDialogEx)
@@ -138,6 +138,8 @@ BEGIN_MESSAGE_MAP(CPlantsCEDlg, CDialogEx)
     ON_BN_CLICKED(IDC_EatZombiesNoCD, &CPlantsCEDlg::OnBnClickedEatzombiesnocd)
     ON_BN_CLICKED(IDC_PlantInfiniteHP, &CPlantsCEDlg::OnBnClickedPlantinfinitehp)
     ON_BN_CLICKED(IDC_MushroomFrozen, &CPlantsCEDlg::OnBnClickedMushroomfrozen)
+    ON_BN_CLICKED(IDC_ClearPlants, &CPlantsCEDlg::OnBnClickedClearplants)
+    ON_BN_CLICKED(IDC_RepeatPlants, &CPlantsCEDlg::OnBnClickedRepeatplants)
 END_MESSAGE_MAP()
 
 
@@ -316,6 +318,14 @@ BOOL CPlantsCEDlg::OnInitDialog()
     m_dwIceMushroomFreezeAllocated = 0;
     m_bIceMushroomFreezeMemoryAllocated = FALSE;
 
+    // 初始化重复种植复选框
+    m_checkRepeatPlant.SetCheck(BST_UNCHECKED);
+    m_bRepeatPlantEnabled = FALSE;
+    m_dwRepeatPlantAddress = 0;
+    m_dwRepeatPlantAllocated = 0;
+    m_bRepeatPlantMemoryAllocated = FALSE;
+
+
 	AddLog(_T("植物大战僵尸阳光修改器启动"));
     AddLog(_T("配置文件路径: %s"), m_strIniPath);
     AddLog(_T("默认进程: %s"), m_strProcessName);
@@ -340,6 +350,8 @@ BOOL CPlantsCEDlg::OnInitDialog()
     AddLog(_T("植物无限血地址偏移: 0x%X"), PLANT_INFINITE_HP_OFFSET);
     AddLog(_T("寒冰菇一直冰冻功能已加载"));
     AddLog(_T("寒冰菇一直冰冻地址偏移: 0x%X"), ICE_MUSHROOM_FREEZE_OFFSET);
+    AddLog(_T("重复种植功能已加载"));
+    AddLog(_T("重复种植地址偏移: 0x%X"), REPEAT_PLANT_OFFSET);
     AddLog(_T("请点击【附加进程】按钮开始"));
 
     // 加载配置文件
@@ -498,6 +510,11 @@ void CPlantsCEDlg::SaveConfigToIni()
     strValue.Format(_T("%d"), nIceMushroomFreeze);
     WritePrivateProfileString(INI_SECTION, _T("IceMushroomFreeze"), strValue, m_strIniPath);
 
+    // 保存重复种植功能
+    int nRepeatPlant = m_checkRepeatPlant.GetCheck();
+    strValue.Format(_T("%d"), nRepeatPlant);
+    WritePrivateProfileString(INI_SECTION, _T("RepeatPlant"), strValue, m_strIniPath);
+
     // 保存进程名称
     WritePrivateProfileString(INI_SECTION, _T("ProcessName"), m_strProcessName, m_strIniPath);
 
@@ -560,6 +577,10 @@ void CPlantsCEDlg::LoadConfigFromIni()
     int nIceMushroomFreeze = GetPrivateProfileInt(INI_SECTION, _T("IceMushroomFreeze"), 0, m_strIniPath);
     m_checkIceMushroomFreeze.SetCheck(nIceMushroomFreeze);
 
+    // 加载重复种植功能
+    int nRepeatPlant = GetPrivateProfileInt(INI_SECTION, _T("RepeatPlant"), 0, m_strIniPath);
+    m_checkRepeatPlant.SetCheck(nRepeatPlant);
+
     // 加载进程名称
     TCHAR szProcessName[MAX_PATH] = { 0 };
     GetPrivateProfileString(INI_SECTION, _T("ProcessName"), TARGET_PROCESS_NAME,
@@ -583,6 +604,7 @@ void CPlantsCEDlg::LoadConfigFromIni()
     AddLog(_T("  食人花无CD: %s"), nChomperNoCD ? _T("启用") : _T("禁用"));
     AddLog(_T("  植物无限血: %s"), nPlantInfiniteHP ? _T("启用") : _T("禁用"));
     AddLog(_T("  寒冰菇一直冰冻: %s"), nIceMushroomFreeze ? _T("启用") : _T("禁用"));
+    AddLog(_T("  重复种植: %s"), nRepeatPlant ? _T("启用") : _T("禁用"));
     AddLog(_T("  进程名称: %s"), m_strProcessName);
 }
 
@@ -672,6 +694,13 @@ void CPlantsCEDlg::ApplyAllCheatsFromConfig()
     {
         AddLog(_T("[配置] 启用寒冰菇一直冰冻"));
         EnableIceMushroomFreeze();
+    }
+
+    // 应用重复种植功能
+    if (m_checkRepeatPlant.GetCheck() == BST_CHECKED && !m_bRepeatPlantEnabled)
+    {
+        AddLog(_T("[配置] 启用重复种植"));
+        EnableRepeatPlant();
     }
 
     AddLog(_T("[配置] 应用完成"));
@@ -872,6 +901,7 @@ void CPlantsCEDlg::DetachFromProcess()
     m_checkChomperNoCD.EnableWindow(FALSE);
     m_checkPlantInfiniteHP.EnableWindow(FALSE);
     m_checkIceMushroomFreeze.EnableWindow(FALSE);
+    m_checkRepeatPlant.EnableWindow(FALSE);
 
     // 禁用卡槽控件
     m_comboSlot1.EnableWindow(FALSE);
@@ -916,6 +946,7 @@ void CPlantsCEDlg::OnBnClickedAttachprocess()
         m_checkChomperNoCD.EnableWindow(TRUE);
         m_checkPlantInfiniteHP.EnableWindow(TRUE);
         m_checkIceMushroomFreeze.EnableWindow(TRUE);
+        m_checkRepeatPlant.EnableWindow(TRUE);
 
         // 启用卡槽控件
         m_comboSlot1.EnableWindow(TRUE);
@@ -4851,4 +4882,320 @@ void CPlantsCEDlg::OnBnClickedMushroomfrozen()
 
     // 保存配置
     SaveConfigToIni();
+}
+
+void CPlantsCEDlg::OnBnClickedClearplants()
+{
+    // TODO: 在此添加控件通知处理程序代码
+}
+// 原始字节码: je PlantsVsZombies_后台.exe+10754 (6字节)
+// CC 84 1F 09 00 00 实际上是 je 指令的字节码
+const BYTE REPEAT_PLANT_ORIGINAL_BYTES[] = {
+    0x0F, 0x84, 0x1F, 0x09, 0x00, 0x00  // je PlantsVsZombies_后台.exe+10754
+};
+
+// 自定义代码: jmp PlantsVsZombies_后台.exe+10754 (无条件跳转)
+// 将条件跳转改为无条件跳转，实现重复种植
+const BYTE REPEAT_PLANT_NEW_CODE[] = {
+    0xE9,                                // jmp (偏移量需要计算)
+    0x90, 0x90, 0x90, 0x90,              // 填充位
+    0xE9                                 // 返回jmp
+};
+
+// ==================== 重复种植功能 ====================
+
+// 分配内存
+BOOL CPlantsCEDlg::AllocateMemoryForRepeatPlant()
+{
+    if (m_bRepeatPlantMemoryAllocated && m_dwRepeatPlantAllocated)
+    {
+        return TRUE;
+    }
+
+    AddLog(_T("[重复种植] 正在分配内存..."));
+
+    m_dwRepeatPlantAllocated = (DWORD_PTR)VirtualAllocEx(
+        m_hProcess,
+        NULL,
+        2048,
+        MEM_COMMIT | MEM_RESERVE,
+        PAGE_EXECUTE_READWRITE
+    );
+
+    if (!m_dwRepeatPlantAllocated)
+    {
+        AddLog(_T("[重复种植] 分配内存失败，错误码: %d"), GetLastError());
+        return FALSE;
+    }
+
+    AddLog(_T("[重复种植] 内存分配成功: 0x%08X"), m_dwRepeatPlantAllocated);
+    m_bRepeatPlantMemoryAllocated = TRUE;
+    return TRUE;
+}
+
+// 写入自定义代码
+BOOL CPlantsCEDlg::WriteCustomCodeForRepeatPlant()
+{
+    if (!m_bRepeatPlantMemoryAllocated)
+        return FALSE;
+
+    // 获取模块基址
+    DWORD_PTR dwModuleBase = GetModuleBaseAddress();
+    if (!dwModuleBase)
+        return FALSE;
+
+    // 目标跳转地址: PlantsVsZombies_后台.exe+10754
+    DWORD_PTR targetJumpAddress = dwModuleBase + 0x10754;
+
+    // 返回地址: 原地址 + 6 (原始指令6字节的下一条指令)
+    DWORD_PTR returnAddress = m_dwRepeatPlantAddress + 6;
+
+    // 计算第一个JMP偏移 (跳转到目标地址)
+    // JMP指令位置 = 分配地址
+    DWORD_PTR jmp1Position = m_dwRepeatPlantAllocated;
+    DWORD jmp1Offset = (DWORD)(targetJumpAddress - (jmp1Position + 5));
+
+    // 计算第二个JMP偏移 (跳转回原地址)
+    // 第二个JMP指令位置 = 分配地址 + 5 (第一个JMP占5字节)
+    DWORD_PTR jmp2Position = m_dwRepeatPlantAllocated + 5;
+    DWORD jmp2Offset = (DWORD)(returnAddress - (jmp2Position + 5));
+
+    const size_t codeSize = 10;  // 5字节 + 5字节 = 10字节
+    BYTE* fullCode = new BYTE[codeSize];
+
+    // 第一个JMP: 跳转到目标地址
+    fullCode[0] = 0xE9;
+    fullCode[1] = (BYTE)(jmp1Offset & 0xFF);
+    fullCode[2] = (BYTE)((jmp1Offset >> 8) & 0xFF);
+    fullCode[3] = (BYTE)((jmp1Offset >> 16) & 0xFF);
+    fullCode[4] = (BYTE)((jmp1Offset >> 24) & 0xFF);
+
+    // 第二个JMP: 跳转回原地址
+    fullCode[5] = 0xE9;
+    fullCode[6] = (BYTE)(jmp2Offset & 0xFF);
+    fullCode[7] = (BYTE)((jmp2Offset >> 8) & 0xFF);
+    fullCode[8] = (BYTE)((jmp2Offset >> 16) & 0xFF);
+    fullCode[9] = (BYTE)((jmp2Offset >> 24) & 0xFF);
+
+    AddLog(_T("[重复种植] ========================================"));
+    AddLog(_T("[重复种植] 分配地址: 0x%08X"), m_dwRepeatPlantAllocated);
+    AddLog(_T("[重复种植] 目标地址: 0x%08X"), m_dwRepeatPlantAddress);
+    AddLog(_T("[重复种植] 跳转目标: 0x%08X (PlantsVsZombies_后台.exe+10754)"), targetJumpAddress);
+    AddLog(_T("[重复种植] 返回地址: 0x%08X (原地址+6)"), returnAddress);
+    AddLog(_T("[重复种植] JMP1偏移: 0x%08X"), jmp1Offset);
+    AddLog(_T("[重复种植] JMP2偏移: 0x%08X"), jmp2Offset);
+
+    SIZE_T bytesWritten = 0;
+    BOOL bResult = WriteProcessMemory(m_hProcess, (LPVOID)m_dwRepeatPlantAllocated,
+        fullCode, codeSize, &bytesWritten);
+
+    if (bResult && bytesWritten == codeSize)
+    {
+        CString strCode;
+        for (size_t i = 0; i < codeSize; i++)
+        {
+            strCode.AppendFormat(_T("%02X "), fullCode[i]);
+        }
+        AddLog(_T("[重复种植] 写入代码: %s"), strCode);
+        AddLog(_T("[重复种植] 自定义代码写入成功"));
+    }
+    else
+    {
+        AddLog(_T("[重复种植] 写入失败，错误码: %d"), GetLastError());
+    }
+
+    delete[] fullCode;
+    return (bResult && bytesWritten == codeSize);
+}
+
+// 安装Hook
+BOOL CPlantsCEDlg::InstallHookForRepeatPlant()
+{
+    AddLog(_T("[重复种植] 正在安装Hook..."));
+
+    // 原始指令6字节，JMP指令5字节，需要1个NOP填充保持6字节
+    DWORD jmpOffset = (DWORD)(m_dwRepeatPlantAllocated - (m_dwRepeatPlantAddress + 5));
+
+    // 6字节指令: JMP(5字节) + NOP(1字节)
+    BYTE jmpInstruction[6] = { 0xE9 };
+    jmpInstruction[1] = (BYTE)(jmpOffset & 0xFF);
+    jmpInstruction[2] = (BYTE)((jmpOffset >> 8) & 0xFF);
+    jmpInstruction[3] = (BYTE)((jmpOffset >> 16) & 0xFF);
+    jmpInstruction[4] = (BYTE)((jmpOffset >> 24) & 0xFF);
+    jmpInstruction[5] = 0x90;  // NOP填充，保持6字节
+
+    AddLog(_T("[重复种植] JMP从 0x%08X 到 0x%08X"),
+        m_dwRepeatPlantAddress, m_dwRepeatPlantAllocated);
+    AddLog(_T("[重复种植] JMP偏移: 0x%08X"), jmpOffset);
+    AddLog(_T("[重复种植] JMP指令: %02X %02X %02X %02X %02X %02X"),
+        jmpInstruction[0], jmpInstruction[1], jmpInstruction[2],
+        jmpInstruction[3], jmpInstruction[4], jmpInstruction[5]);
+
+    DWORD dwOldProtect = 0;
+    VirtualProtectEx(m_hProcess, (LPVOID)m_dwRepeatPlantAddress, 6,
+        PAGE_EXECUTE_READWRITE, &dwOldProtect);
+
+    SIZE_T bytesWritten = 0;
+    BOOL bResult = WriteProcessMemory(m_hProcess, (LPVOID)m_dwRepeatPlantAddress,
+        jmpInstruction, 6, &bytesWritten);
+
+    VirtualProtectEx(m_hProcess, (LPVOID)m_dwRepeatPlantAddress, 6, dwOldProtect, &dwOldProtect);
+
+    if (bResult && bytesWritten == 6)
+    {
+        AddLog(_T("[重复种植] Hook安装成功！"));
+        return TRUE;
+    }
+    else
+    {
+        AddLog(_T("[重复种植] Hook安装失败，错误码: %d"), GetLastError());
+        return FALSE;
+    }
+}
+
+// 释放内存
+void CPlantsCEDlg::FreeRepeatPlantMemory()
+{
+    if (m_bRepeatPlantMemoryAllocated && m_dwRepeatPlantAllocated)
+    {
+        VirtualFreeEx(m_hProcess, (LPVOID)m_dwRepeatPlantAllocated, 0, MEM_RELEASE);
+        AddLog(_T("[重复种植] 内存已释放"));
+        m_bRepeatPlantMemoryAllocated = FALSE;
+        m_dwRepeatPlantAllocated = 0;
+    }
+}
+
+// 启用重复种植
+void CPlantsCEDlg::EnableRepeatPlant()
+{
+    if (!m_hProcess || !m_bAttached)
+    {
+        AddLog(_T("[重复种植] 错误: 未附加进程"));
+        return;
+    }
+
+    if (m_bRepeatPlantEnabled)
+    {
+        AddLog(_T("[重复种植] 已经启用"));
+        return;
+    }
+
+    AddLog(_T("[重复种植] 正在启用..."));
+
+    // 获取目标地址
+    if (m_dwRepeatPlantAddress == 0)
+    {
+        DWORD_PTR dwModuleBase = GetModuleBaseAddress();
+        if (dwModuleBase)
+        {
+            m_dwRepeatPlantAddress = dwModuleBase + REPEAT_PLANT_OFFSET;
+            AddLog(_T("[重复种植] 目标地址: 0x%08X"), m_dwRepeatPlantAddress);
+        }
+        else
+        {
+            AddLog(_T("[重复种植] 无法获取模块基址"));
+            return;
+        }
+    }
+
+    // 读取当前字节码
+    BYTE currentBytes[6] = { 0 };
+    SIZE_T bytesRead = 0;
+    if (ReadProcessMemory(m_hProcess, (LPCVOID)m_dwRepeatPlantAddress, currentBytes, 6, &bytesRead))
+    {
+        AddLog(_T("[重复种植] 当前字节码: %02X %02X %02X %02X %02X %02X"),
+            currentBytes[0], currentBytes[1], currentBytes[2],
+            currentBytes[3], currentBytes[4], currentBytes[5]);
+    }
+
+    // 1. 分配内存
+    if (!AllocateMemoryForRepeatPlant())
+        return;
+
+    // 2. 写入自定义代码
+    if (!WriteCustomCodeForRepeatPlant())
+    {
+        FreeRepeatPlantMemory();
+        return;
+    }
+
+    // 3. 安装Hook
+    if (!InstallHookForRepeatPlant())
+    {
+        FreeRepeatPlantMemory();
+        return;
+    }
+
+    m_bRepeatPlantEnabled = TRUE;
+    AddLog(_T("[重复种植] 成功启用！可以在同一位置重复种植植物"));
+}
+
+// 禁用重复种植
+void CPlantsCEDlg::DisableRepeatPlant()
+{
+    if (!m_hProcess || !m_bAttached)
+    {
+        AddLog(_T("[重复种植] 错误: 未附加进程"));
+        return;
+    }
+
+    if (!m_bRepeatPlantEnabled)
+    {
+        AddLog(_T("[重复种植] 已经禁用"));
+        return;
+    }
+
+    AddLog(_T("[重复种植] 正在禁用..."));
+
+    if (m_dwRepeatPlantAddress == 0)
+    {
+        DWORD_PTR dwModuleBase = GetModuleBaseAddress();
+        if (dwModuleBase)
+            m_dwRepeatPlantAddress = dwModuleBase + REPEAT_PLANT_OFFSET;
+    }
+
+    // 恢复原始字节码 (6字节)
+    DWORD dwOldProtect = 0;
+    VirtualProtectEx(m_hProcess, (LPVOID)m_dwRepeatPlantAddress, sizeof(REPEAT_PLANT_ORIGINAL_BYTES),
+        PAGE_EXECUTE_READWRITE, &dwOldProtect);
+
+    SIZE_T bytesWritten = 0;
+    BOOL bResult = WriteProcessMemory(m_hProcess, (LPVOID)m_dwRepeatPlantAddress,
+        REPEAT_PLANT_ORIGINAL_BYTES, sizeof(REPEAT_PLANT_ORIGINAL_BYTES), &bytesWritten);
+
+    VirtualProtectEx(m_hProcess, (LPVOID)m_dwRepeatPlantAddress, sizeof(REPEAT_PLANT_ORIGINAL_BYTES),
+        dwOldProtect, &dwOldProtect);
+
+    if (bResult && bytesWritten == sizeof(REPEAT_PLANT_ORIGINAL_BYTES))
+    {
+        AddLog(_T("[重复种植] 成功禁用！恢复正常种植限制"));
+        m_bRepeatPlantEnabled = FALSE;
+        FreeRepeatPlantMemory();
+    }
+    else
+    {
+        AddLog(_T("[重复种植] 恢复失败，错误码: %d"), GetLastError());
+    }
+}
+
+void CPlantsCEDlg::OnBnClickedRepeatplants()
+{
+    // TODO: 在此添加控件通知处理程序代码
+    int nCheck = m_checkRepeatPlant.GetCheck();
+
+    if (!m_bAttached || !m_hProcess)
+    {
+        AddLog(_T("[重复种植] 错误: 请先附加进程"));
+        m_checkRepeatPlant.SetCheck(m_bRepeatPlantEnabled ? BST_CHECKED : BST_UNCHECKED);
+        return;
+    }
+
+    if (nCheck == BST_CHECKED)
+    {
+        EnableRepeatPlant();
+    }
+    else
+    {
+        DisableRepeatPlant();
+    }
 }

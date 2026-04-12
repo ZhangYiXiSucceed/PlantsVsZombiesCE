@@ -45,6 +45,8 @@ struct SunlightAddress {
 
 #define PLANT_INFINITE_HP_OFFSET 0x12FCF0  // 植物无限血偏移地址
 #define ICE_MUSHROOM_FREEZE_OFFSET 0x12B41F  // 寒冰菇一直冰冻偏移地址
+#define REPEAT_PLANT_OFFSET 0xFE2F       // 重复种植偏移地址
+
 // CPlantsCEDlg 对话框
 class CPlantsCEDlg : public CDialogEx
 {
@@ -188,6 +190,12 @@ protected:
 	DWORD_PTR m_dwIceMushroomFreezeAddress; // 目标地址 PlantsVsZombies_后台.exe+12B41F
 	DWORD_PTR m_dwIceMushroomFreezeAllocated; // 分配的内存地址
 	BOOL m_bIceMushroomFreezeMemoryAllocated; // 内存是否已分配
+
+	CButton m_checkRepeatPlant;          // 重复种植复选框
+	BOOL m_bRepeatPlantEnabled;          // 功能开关状态
+	DWORD_PTR m_dwRepeatPlantAddress;    // 目标地址 PlantsVsZombies_后台.exe+FE2F
+	DWORD_PTR m_dwRepeatPlantAllocated;  // 分配的内存地址
+	BOOL m_bRepeatPlantMemoryAllocated;  // 内存是否已分配
 
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();
@@ -347,6 +355,17 @@ public:
     BOOL InstallHookForIceMushroomFreeze();    // 安装Hook
     void FreeIceMushroomFreezeMemory();        // 释放内存
 	afx_msg void OnBnClickedMushroomfrozen();
+	afx_msg void OnBnClickedClearplants();
+	
+	// 函数声明
+	void EnableRepeatPlant();             // 启用重复种植
+	void DisableRepeatPlant();            // 禁用重复种植
+	BOOL AllocateMemoryForRepeatPlant();  // 分配内存
+	BOOL WriteCustomCodeForRepeatPlant(); // 写入自定义代码
+	BOOL InstallHookForRepeatPlant();     // 安装Hook
+	void FreeRepeatPlantMemory();         // 释放内存
+
+	afx_msg void OnBnClickedRepeatplants();
 };
 
 
