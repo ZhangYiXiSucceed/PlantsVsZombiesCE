@@ -46,6 +46,7 @@ struct SunlightAddress {
 #define PLANT_INFINITE_HP_OFFSET 0x12FCF0  // 植物无限血偏移地址
 #define ICE_MUSHROOM_FREEZE_OFFSET 0x12B41F  // 寒冰菇一直冰冻偏移地址
 #define REPEAT_PLANT_OFFSET 0xFE2F       // 重复种植偏移地址
+#define SUN_MAX_VALUE_OFFSET 0x30A1D     // 阳光最大值偏移地址
 
 // CPlantsCEDlg 对话框
 class CPlantsCEDlg : public CDialogEx
@@ -196,6 +197,12 @@ protected:
 	DWORD_PTR m_dwRepeatPlantAddress;    // 目标地址 PlantsVsZombies_后台.exe+FE2F
 	DWORD_PTR m_dwRepeatPlantAllocated;  // 分配的内存地址
 	BOOL m_bRepeatPlantMemoryAllocated;  // 内存是否已分配
+
+	CButton m_checkSunMaxValue;          // 阳光最大值复选框
+	BOOL m_bSunMaxValueEnabled;          // 功能开关状态
+	DWORD_PTR m_dwSunMaxValueAddress;    // 目标地址 PlantsVsZombies_后台.exe+30A1D
+	DWORD_PTR m_dwSunMaxValueAllocated;  // 分配的内存地址
+	BOOL m_bSunMaxValueMemoryAllocated;  // 内存是否已分配
 
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();
@@ -366,6 +373,15 @@ public:
 	void FreeRepeatPlantMemory();         // 释放内存
 
 	afx_msg void OnBnClickedRepeatplants();
+
+	// 函数声明
+	void EnableSunMaxValue();             // 启用阳光最大值
+	void DisableSunMaxValue();            // 禁用阳光最大值
+	BOOL AllocateMemoryForSunMaxValue();  // 分配内存
+	BOOL WriteCustomCodeForSunMaxValue(); // 写入自定义代码
+	BOOL InstallHookForSunMaxValue();     // 安装Hook
+	void FreeSunMaxValueMemory();         // 释放内存
+	afx_msg void OnBnClickedSunvaluemax();
 };
 
 

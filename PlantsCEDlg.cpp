@@ -104,6 +104,7 @@ void CPlantsCEDlg::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_PlantInfiniteHP, m_checkPlantInfiniteHP);
     DDX_Control(pDX, IDC_MushroomFrozen, m_checkIceMushroomFreeze);
     DDX_Control(pDX, IDC_RepeatPlants, m_checkRepeatPlant);
+    DDX_Control(pDX, IDC_SunValueMax, m_checkSunMaxValue);
 }
 
 BEGIN_MESSAGE_MAP(CPlantsCEDlg, CDialogEx)
@@ -140,6 +141,7 @@ BEGIN_MESSAGE_MAP(CPlantsCEDlg, CDialogEx)
     ON_BN_CLICKED(IDC_MushroomFrozen, &CPlantsCEDlg::OnBnClickedMushroomfrozen)
     ON_BN_CLICKED(IDC_ClearPlants, &CPlantsCEDlg::OnBnClickedClearplants)
     ON_BN_CLICKED(IDC_RepeatPlants, &CPlantsCEDlg::OnBnClickedRepeatplants)
+    ON_BN_CLICKED(IDC_SunValueMax, &CPlantsCEDlg::OnBnClickedSunvaluemax)
 END_MESSAGE_MAP()
 
 
@@ -325,6 +327,13 @@ BOOL CPlantsCEDlg::OnInitDialog()
     m_dwRepeatPlantAllocated = 0;
     m_bRepeatPlantMemoryAllocated = FALSE;
 
+    // 初始化阳光最大值复选框
+    m_checkSunMaxValue.SetCheck(BST_UNCHECKED);
+    m_bSunMaxValueEnabled = FALSE;
+    m_dwSunMaxValueAddress = 0;
+    m_dwSunMaxValueAllocated = 0;
+    m_bSunMaxValueMemoryAllocated = FALSE;
+
 
 	AddLog(_T("植物大战僵尸阳光修改器启动"));
     AddLog(_T("配置文件路径: %s"), m_strIniPath);
@@ -352,6 +361,9 @@ BOOL CPlantsCEDlg::OnInitDialog()
     AddLog(_T("寒冰菇一直冰冻地址偏移: 0x%X"), ICE_MUSHROOM_FREEZE_OFFSET);
     AddLog(_T("重复种植功能已加载"));
     AddLog(_T("重复种植地址偏移: 0x%X"), REPEAT_PLANT_OFFSET);
+    AddLog(_T("阳光最大值功能已加载"));
+    AddLog(_T("阳光最大值地址偏移: 0x%X"), SUN_MAX_VALUE_OFFSET);
+    AddLog(_T("阳光上限: 9990 -> 5000000"));
     AddLog(_T("请点击【附加进程】按钮开始"));
 
     // 加载配置文件
@@ -515,6 +527,11 @@ void CPlantsCEDlg::SaveConfigToIni()
     strValue.Format(_T("%d"), nRepeatPlant);
     WritePrivateProfileString(INI_SECTION, _T("RepeatPlant"), strValue, m_strIniPath);
 
+    // 保存阳光最大值功能
+    int nSunMaxValue = m_checkSunMaxValue.GetCheck();
+    strValue.Format(_T("%d"), nSunMaxValue);
+    WritePrivateProfileString(INI_SECTION, _T("SunMaxValue"), strValue, m_strIniPath);
+
     // 保存进程名称
     WritePrivateProfileString(INI_SECTION, _T("ProcessName"), m_strProcessName, m_strIniPath);
 
@@ -580,6 +597,10 @@ void CPlantsCEDlg::LoadConfigFromIni()
     // 加载重复种植功能
     int nRepeatPlant = GetPrivateProfileInt(INI_SECTION, _T("RepeatPlant"), 0, m_strIniPath);
     m_checkRepeatPlant.SetCheck(nRepeatPlant);
+
+    //加载阳光最大值功能
+    int nSunMaxValue = GetPrivateProfileInt(INI_SECTION, _T("SunMaxValue"), 0, m_strIniPath);
+    m_checkSunMaxValue.SetCheck(nSunMaxValue);
 
     // 加载进程名称
     TCHAR szProcessName[MAX_PATH] = { 0 };
@@ -703,6 +724,12 @@ void CPlantsCEDlg::ApplyAllCheatsFromConfig()
         EnableRepeatPlant();
     }
 
+    // 应用阳光最大值功能
+    if (m_checkSunMaxValue.GetCheck() == BST_CHECKED && !m_bSunMaxValueEnabled)
+    {
+        AddLog(_T("[配置] 启用阳光最大值"));
+        EnableSunMaxValue();
+    }
     AddLog(_T("[配置] 应用完成"));
 }
 
@@ -865,6 +892,12 @@ void CPlantsCEDlg::DetachFromProcess()
     {
         DisableZombiesAllOut();
     }
+
+    if (m_bSunMaxValueEnabled)
+    {
+        DisableSunMaxValue();
+    }
+
     // 保存配置（保存复选框状态）
     SaveConfigToIni();
 
@@ -902,6 +935,7 @@ void CPlantsCEDlg::DetachFromProcess()
     m_checkPlantInfiniteHP.EnableWindow(FALSE);
     m_checkIceMushroomFreeze.EnableWindow(FALSE);
     m_checkRepeatPlant.EnableWindow(FALSE);
+    m_checkSunMaxValue.EnableWindow(FALSE);
 
     // 禁用卡槽控件
     m_comboSlot1.EnableWindow(FALSE);
@@ -947,6 +981,7 @@ void CPlantsCEDlg::OnBnClickedAttachprocess()
         m_checkPlantInfiniteHP.EnableWindow(TRUE);
         m_checkIceMushroomFreeze.EnableWindow(TRUE);
         m_checkRepeatPlant.EnableWindow(TRUE);
+        m_checkSunMaxValue.EnableWindow(TRUE);
 
         // 启用卡槽控件
         m_comboSlot1.EnableWindow(TRUE);
@@ -5198,4 +5233,354 @@ void CPlantsCEDlg::OnBnClickedRepeatplants()
     {
         DisableRepeatPlant();
     }
+}
+
+
+
+// 原始字节码: cmp ecx,00002706; jle ...; mov [eax+00005560],00002706 (18字节)
+const BYTE SUN_MAX_VALUE_ORIGINAL_BYTES[] = {
+    0x81, 0xF9, 0x06, 0x27, 0x00, 0x00,  // cmp ecx, 00002706 (9990)
+    0x7E, 0x78,                          // jle PlantsVsZombies_后台.exe+30A9D
+    0xC7, 0x80, 0x60, 0x55, 0x00, 0x00,  // mov [eax+00005560],
+    0x06, 0x27, 0x00, 0x00              // 00002706 (9990)
+};
+
+const BYTE SUN_MAX_VALUE_NEW_CODE[] = {
+    0x81, 0xF9, 0x40, 0xB4, 0x4C, 0x00,  // cmp ecx, 004C4B40 (5000000)
+    0x0F, 0x8E,                          // jle (6字节条件跳转，偏移需要计算)
+    0x00, 0x00, 0x00, 0x00,              // 占位偏移
+    0xC7, 0x80, 0x60, 0x55, 0x00, 0x00,  // mov [eax+00005560],
+    0x40, 0xB4, 0x4C, 0x00,              // 004C4B40 (5000000)
+    0xE9                                 // jmp返回 (偏移需要计算)
+};
+
+// 分配内存
+BOOL CPlantsCEDlg::AllocateMemoryForSunMaxValue()
+{
+    if (m_bSunMaxValueMemoryAllocated && m_dwSunMaxValueAllocated)
+    {
+        return TRUE;
+    }
+
+    AddLog(_T("[阳光最大值] 正在分配内存..."));
+
+    m_dwSunMaxValueAllocated = (DWORD_PTR)VirtualAllocEx(
+        m_hProcess,
+        NULL,
+        2048,
+        MEM_COMMIT | MEM_RESERVE,
+        PAGE_EXECUTE_READWRITE
+    );
+
+    if (!m_dwSunMaxValueAllocated)
+    {
+        AddLog(_T("[阳光最大值] 分配内存失败，错误码: %d"), GetLastError());
+        return FALSE;
+    }
+
+    AddLog(_T("[阳光最大值] 内存分配成功: 0x%08X"), m_dwSunMaxValueAllocated);
+    m_bSunMaxValueMemoryAllocated = TRUE;
+    return TRUE;
+}
+
+// 写入自定义代码
+BOOL CPlantsCEDlg::WriteCustomCodeForSunMaxValue()
+{
+    if (!m_bSunMaxValueMemoryAllocated)
+        return FALSE;
+
+    // 计算目标跳转地址: PlantsVsZombies_后台.exe+30A9D
+    DWORD_PTR dwModuleBase = GetModuleBaseAddress();
+    if (!dwModuleBase)
+        return FALSE;
+
+    DWORD_PTR targetJumpAddress = dwModuleBase + 0x30A9D;
+
+    // 返回地址: 原地址 + 18 (原始指令18字节的下一条指令)
+    DWORD_PTR returnAddress = m_dwSunMaxValueAddress + 18;
+
+    // 计算条件跳转偏移 (jle)
+    // 条件跳转指令位置 = 分配地址 + 6 (cmp指令6字节)
+    DWORD_PTR jlePosition = m_dwSunMaxValueAllocated + 6;
+    DWORD jleOffset = (DWORD)(targetJumpAddress - (jlePosition + 6));  // 6字节条件跳转
+
+    // 计算返回JMP偏移
+    DWORD_PTR jmpPosition = m_dwSunMaxValueAllocated + 6 + 6 + 6 + 4;  // cmp(6) + jle(6) + mov(6) + 4字节值
+    DWORD jmpOffset = (DWORD)(returnAddress - (jmpPosition + 5));
+
+    // 构建完整代码
+    const size_t codeSize = 6 + 6 + 6 + 4 + 5;  // cmp(6) + jle(6) + mov(6) + 值(4) + jmp(5) = 27字节
+    BYTE* fullCode = new BYTE[codeSize];
+    size_t pos = 0;
+
+    // 1. cmp ecx, 5000000 (6字节)
+    fullCode[pos++] = 0x81;
+    fullCode[pos++] = 0xF9;
+    fullCode[pos++] = 0x40;
+    fullCode[pos++] = 0xB4;
+    fullCode[pos++] = 0x4C;
+    fullCode[pos++] = 0x00;
+
+    // 2. jle 目标地址 (6字节)
+    fullCode[pos++] = 0x0F;
+    fullCode[pos++] = 0x8E;
+    fullCode[pos++] = (BYTE)(jleOffset & 0xFF);
+    fullCode[pos++] = (BYTE)((jleOffset >> 8) & 0xFF);
+    fullCode[pos++] = (BYTE)((jleOffset >> 16) & 0xFF);
+    fullCode[pos++] = (BYTE)((jleOffset >> 24) & 0xFF);
+
+    // 3. mov [eax+00005560], 5000000 (6字节 + 4字节值 = 10字节)
+    fullCode[pos++] = 0xC7;
+    fullCode[pos++] = 0x80;
+    fullCode[pos++] = 0x60;
+    fullCode[pos++] = 0x55;
+    fullCode[pos++] = 0x00;
+    fullCode[pos++] = 0x00;
+    fullCode[pos++] = 0x40;
+    fullCode[pos++] = 0xB4;
+    fullCode[pos++] = 0x4C;
+    fullCode[pos++] = 0x00;
+
+    // 4. jmp 返回 (5字节)
+    fullCode[pos++] = 0xE9;
+    fullCode[pos++] = (BYTE)(jmpOffset & 0xFF);
+    fullCode[pos++] = (BYTE)((jmpOffset >> 8) & 0xFF);
+    fullCode[pos++] = (BYTE)((jmpOffset >> 16) & 0xFF);
+    fullCode[pos++] = (BYTE)((jmpOffset >> 24) & 0xFF);
+
+    AddLog(_T("[阳光最大值] ========================================"));
+    AddLog(_T("[阳光最大值] 分配地址: 0x%08X"), m_dwSunMaxValueAllocated);
+    AddLog(_T("[阳光最大值] 目标地址: 0x%08X"), m_dwSunMaxValueAddress);
+    AddLog(_T("[阳光最大值] 跳转目标: 0x%08X (PlantsVsZombies_后台.exe+30A9D)"), targetJumpAddress);
+    AddLog(_T("[阳光最大值] 返回地址: 0x%08X (原地址+18)"), returnAddress);
+    AddLog(_T("[阳光最大值] jle偏移: 0x%08X"), jleOffset);
+    AddLog(_T("[阳光最大值] jmp返回偏移: 0x%08X"), jmpOffset);
+    AddLog(_T("[阳光最大值] 代码大小: %d 字节"), codeSize);
+
+    SIZE_T bytesWritten = 0;
+    BOOL bResult = WriteProcessMemory(m_hProcess, (LPVOID)m_dwSunMaxValueAllocated,
+        fullCode, codeSize, &bytesWritten);
+
+    if (bResult && bytesWritten == codeSize)
+    {
+        CString strCode;
+        for (size_t i = 0; i < codeSize; i++)
+        {
+            strCode.AppendFormat(_T("%02X "), fullCode[i]);
+            if ((i + 1) % 16 == 0) strCode.AppendFormat(_T("\n        "));
+        }
+        AddLog(_T("[阳光最大值] 写入代码:\n        %s"), strCode);
+        AddLog(_T("[阳光最大值] 自定义代码写入成功"));
+    }
+    else
+    {
+        AddLog(_T("[阳光最大值] 写入失败，错误码: %d"), GetLastError());
+    }
+
+    delete[] fullCode;
+    return (bResult && bytesWritten == codeSize);
+}
+
+
+// 安装Hook
+BOOL CPlantsCEDlg::InstallHookForSunMaxValue()
+{
+    AddLog(_T("[阳光最大值] 正在安装Hook..."));
+
+    // 原始指令18字节，JMP指令5字节，需要13个NOP填充保持18字节
+    DWORD jmpOffset = (DWORD)(m_dwSunMaxValueAllocated - (m_dwSunMaxValueAddress + 5));
+
+    // 18字节指令: JMP(5字节) + NOP(13字节)
+    BYTE jmpInstruction[18] = { 0xE9 };
+    jmpInstruction[1] = (BYTE)(jmpOffset & 0xFF);
+    jmpInstruction[2] = (BYTE)((jmpOffset >> 8) & 0xFF);
+    jmpInstruction[3] = (BYTE)((jmpOffset >> 16) & 0xFF);
+    jmpInstruction[4] = (BYTE)((jmpOffset >> 24) & 0xFF);
+
+    // 填充NOP
+    for (int i = 5; i < 18; i++)
+    {
+        jmpInstruction[i] = 0x90;
+    }
+
+    AddLog(_T("[阳光最大值] JMP从 0x%08X 到 0x%08X"),
+        m_dwSunMaxValueAddress, m_dwSunMaxValueAllocated);
+    AddLog(_T("[阳光最大值] JMP偏移: 0x%08X"), jmpOffset);
+    AddLog(_T("[阳光最大值] JMP指令: %02X %02X %02X %02X %02X + 13个NOP"),
+        jmpInstruction[0], jmpInstruction[1], jmpInstruction[2],
+        jmpInstruction[3], jmpInstruction[4]);
+
+    DWORD dwOldProtect = 0;
+    VirtualProtectEx(m_hProcess, (LPVOID)m_dwSunMaxValueAddress, 18,
+        PAGE_EXECUTE_READWRITE, &dwOldProtect);
+
+    SIZE_T bytesWritten = 0;
+    BOOL bResult = WriteProcessMemory(m_hProcess, (LPVOID)m_dwSunMaxValueAddress,
+        jmpInstruction, 18, &bytesWritten);
+
+    VirtualProtectEx(m_hProcess, (LPVOID)m_dwSunMaxValueAddress, 18, dwOldProtect, &dwOldProtect);
+
+    if (bResult && bytesWritten == 18)
+    {
+        AddLog(_T("[阳光最大值] Hook安装成功！"));
+        return TRUE;
+    }
+    else
+    {
+        AddLog(_T("[阳光最大值] Hook安装失败，错误码: %d"), GetLastError());
+        return FALSE;
+    }
+}
+
+// 释放内存
+void CPlantsCEDlg::FreeSunMaxValueMemory()
+{
+    if (m_bSunMaxValueMemoryAllocated && m_dwSunMaxValueAllocated)
+    {
+        VirtualFreeEx(m_hProcess, (LPVOID)m_dwSunMaxValueAllocated, 0, MEM_RELEASE);
+        AddLog(_T("[阳光最大值] 内存已释放"));
+        m_bSunMaxValueMemoryAllocated = FALSE;
+        m_dwSunMaxValueAllocated = 0;
+    }
+}
+
+// 启用阳光最大值
+void CPlantsCEDlg::EnableSunMaxValue()
+{
+    if (!m_hProcess || !m_bAttached)
+    {
+        AddLog(_T("[阳光最大值] 错误: 未附加进程"));
+        return;
+    }
+
+    if (m_bSunMaxValueEnabled)
+    {
+        AddLog(_T("[阳光最大值] 已经启用"));
+        return;
+    }
+
+    AddLog(_T("[阳光最大值] 正在启用..."));
+
+    // 获取目标地址
+    if (m_dwSunMaxValueAddress == 0)
+    {
+        DWORD_PTR dwModuleBase = GetModuleBaseAddress();
+        if (dwModuleBase)
+        {
+            m_dwSunMaxValueAddress = dwModuleBase + SUN_MAX_VALUE_OFFSET;
+            AddLog(_T("[阳光最大值] 目标地址: 0x%08X"), m_dwSunMaxValueAddress);
+        }
+        else
+        {
+            AddLog(_T("[阳光最大值] 无法获取模块基址"));
+            return;
+        }
+    }
+
+    // 读取当前字节码
+    BYTE currentBytes[18] = { 0 };
+    SIZE_T bytesRead = 0;
+    if (ReadProcessMemory(m_hProcess, (LPCVOID)m_dwSunMaxValueAddress, currentBytes, 18, &bytesRead))
+    {
+        CString strCode;
+        for (int i = 0; i < 18; i++)
+        {
+            strCode.AppendFormat(_T("%02X "), currentBytes[i]);
+        }
+        AddLog(_T("[阳光最大值] 当前字节码: %s"), strCode);
+    }
+
+    // 1. 分配内存
+    if (!AllocateMemoryForSunMaxValue())
+        return;
+
+    // 2. 写入自定义代码
+    if (!WriteCustomCodeForSunMaxValue())
+    {
+        FreeSunMaxValueMemory();
+        return;
+    }
+
+    // 3. 安装Hook
+    if (!InstallHookForSunMaxValue())
+    {
+        FreeSunMaxValueMemory();
+        return;
+    }
+
+    m_bSunMaxValueEnabled = TRUE;
+    AddLog(_T("[阳光最大值] 成功启用！阳光上限已提升至5000000"));
+}
+
+// 禁用阳光最大值
+void CPlantsCEDlg::DisableSunMaxValue()
+{
+    if (!m_hProcess || !m_bAttached)
+    {
+        AddLog(_T("[阳光最大值] 错误: 未附加进程"));
+        return;
+    }
+
+    if (!m_bSunMaxValueEnabled)
+    {
+        AddLog(_T("[阳光最大值] 已经禁用"));
+        return;
+    }
+
+    AddLog(_T("[阳光最大值] 正在禁用..."));
+
+    if (m_dwSunMaxValueAddress == 0)
+    {
+        DWORD_PTR dwModuleBase = GetModuleBaseAddress();
+        if (dwModuleBase)
+            m_dwSunMaxValueAddress = dwModuleBase + SUN_MAX_VALUE_OFFSET;
+    }
+
+    // 恢复原始字节码 (18字节)
+    DWORD dwOldProtect = 0;
+    VirtualProtectEx(m_hProcess, (LPVOID)m_dwSunMaxValueAddress, sizeof(SUN_MAX_VALUE_ORIGINAL_BYTES),
+        PAGE_EXECUTE_READWRITE, &dwOldProtect);
+
+    SIZE_T bytesWritten = 0;
+    BOOL bResult = WriteProcessMemory(m_hProcess, (LPVOID)m_dwSunMaxValueAddress,
+        SUN_MAX_VALUE_ORIGINAL_BYTES, sizeof(SUN_MAX_VALUE_ORIGINAL_BYTES), &bytesWritten);
+
+    VirtualProtectEx(m_hProcess, (LPVOID)m_dwSunMaxValueAddress, sizeof(SUN_MAX_VALUE_ORIGINAL_BYTES),
+        dwOldProtect, &dwOldProtect);
+
+    if (bResult && bytesWritten == sizeof(SUN_MAX_VALUE_ORIGINAL_BYTES))
+    {
+        AddLog(_T("[阳光最大值] 成功禁用！阳光上限已恢复为9990"));
+        m_bSunMaxValueEnabled = FALSE;
+        FreeSunMaxValueMemory();
+    }
+    else
+    {
+        AddLog(_T("[阳光最大值] 恢复失败，错误码: %d"), GetLastError());
+    }
+}
+
+void CPlantsCEDlg::OnBnClickedSunvaluemax()
+{
+    // TODO: 在此添加控件通知处理程序代码
+    int nCheck = m_checkSunMaxValue.GetCheck();
+
+    if (!m_bAttached || !m_hProcess)
+    {
+        AddLog(_T("[阳光最大值] 错误: 请先附加进程"));
+        m_checkSunMaxValue.SetCheck(m_bSunMaxValueEnabled ? BST_CHECKED : BST_UNCHECKED);
+        return;
+    }
+
+    if (nCheck == BST_CHECKED)
+    {
+        EnableSunMaxValue();
+    }
+    else
+    {
+        DisableSunMaxValue();
+    }
+
+    // 保存配置
+    SaveConfigToIni();
 }
