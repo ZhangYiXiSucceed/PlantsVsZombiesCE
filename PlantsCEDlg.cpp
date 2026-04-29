@@ -142,6 +142,7 @@ BEGIN_MESSAGE_MAP(CPlantsCEDlg, CDialogEx)
     ON_BN_CLICKED(IDC_ClearPlants, &CPlantsCEDlg::OnBnClickedClearplants)
     ON_BN_CLICKED(IDC_RepeatPlants, &CPlantsCEDlg::OnBnClickedRepeatplants)
     ON_BN_CLICKED(IDC_SunValueMax, &CPlantsCEDlg::OnBnClickedSunvaluemax)
+    ON_WM_TIMER()  // 添加这一行：定时器消息映射
 END_MESSAGE_MAP()
 
 
@@ -369,6 +370,9 @@ BOOL CPlantsCEDlg::OnInitDialog()
     // 加载配置文件
     LoadConfigFromIni();
 
+    // 设置定时器，等待控件完全创建图片
+    SetTimer(1, 100, NULL);  // 100毫秒后触发
+
     return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -410,6 +414,7 @@ void CPlantsCEDlg::OnPaint()
 	}
 	else
 	{
+        DrawPictureToControl();
 		CDialogEx::OnPaint();
 	}
 }
@@ -424,28 +429,10 @@ HCURSOR CPlantsCEDlg::OnQueryDragIcon()
 
 void CPlantsCEDlg::ShowBackgroundPicture(CString m_JpgPathName)
 {
-	CRect rect;
-	CRect rectImage;
-	CImage image;
-	image.Load(m_JpgPathName);
-	int cx = image.GetWidth();
-	int cy = image.GetHeight();
-	m_PictureShow.GetClientRect(&rect);
-	CDC* pDC = m_PictureShow.GetDC();
-	SetStretchBltMode(pDC->m_hDC, STRETCH_HALFTONE);
-	if ((cx < rect.Width()) || (cy < rect.Height()))
-	{
-		rectImage = CRect(rect.TopLeft(), CSize(cx, cy));
-		image.StretchBlt(pDC->m_hDC, rectImage, SRCCOPY);
-	}
-	else
-	{
-		float xScale = (float)rect.Width() / (float)cx;
-		float yScale = (float)rect.Height() / (float)cy;
-		float ScaleIndex = (xScale >= yScale, xScale, yScale);
-		rectImage = CRect(rect.TopLeft(), CSize((int)cx * ScaleIndex, (int)cy * ScaleIndex));
-		image.StretchBlt(pDC->m_hDC, rect, SRCCOPY); //将图片画到Picture控件表示的矩形区域
-	}
+    // 保存图片路径
+    m_strCurrentImagePath = m_JpgPathName;
+    // 立即绘制
+    DrawPictureToControl();
 }
 
 
@@ -462,6 +449,55 @@ void CPlantsCEDlg::OnBnClickedBtnselpicture()
 	}
 }
 
+// 添加定时器响应
+void CPlantsCEDlg::OnTimer(UINT_PTR nIDEvent)
+{
+    if (nIDEvent == 1)
+    {
+        KillTimer(1);  // 停止定时器
+
+        // 在这里加载默认图片
+        CString defaultPath = _T("background.jpg");  // 设置你的默认图片路径
+        if (PathFileExists(defaultPath))
+        {
+            ShowBackgroundPicture(defaultPath);
+        }
+    }
+    CDialogEx::OnTimer(nIDEvent);
+}
+
+
+// 新增：实际的绘制函数
+void CPlantsCEDlg::DrawPictureToControl()
+{
+    if (m_strCurrentImagePath.IsEmpty())
+        return;
+
+    if (!PathFileExists(m_strCurrentImagePath))
+        return;
+
+    CRect rect;
+    m_PictureShow.GetClientRect(&rect);
+
+    if (rect.IsRectEmpty())
+        return;
+
+    CImage image;
+    HRESULT hr = image.Load(m_strCurrentImagePath);
+    if (FAILED(hr))
+        return;
+
+    CDC* pDC = m_PictureShow.GetDC();
+    if (pDC && pDC->GetSafeHdc())
+    {
+        SetStretchBltMode(pDC->m_hDC, STRETCH_HALFTONE);
+
+        // 直接拉伸到整个控件区域，不保持比例（可能会变形）
+        image.StretchBlt(pDC->m_hDC, rect, SRCCOPY);
+
+        m_PictureShow.ReleaseDC(pDC);
+    }
+}
 // 保存配置到INI文件
 void CPlantsCEDlg::SaveConfigToIni()
 {

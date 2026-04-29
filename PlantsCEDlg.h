@@ -217,6 +217,10 @@ public:
 	afx_msg void OnStnClickedPictureshow();
 	afx_msg void OnBnClickedBtnselpicture();
 
+	afx_msg void OnTimer(UINT_PTR nIDEvent);  // 定时器消息
+
+	CString m_strCurrentImagePath;            // 保存当前图片路径
+	void DrawPictureToControl();              // 新增：实际的绘制函数
 	// 辅助函数
 	BOOL FindProcessId(LPCTSTR szProcessName, DWORD& dwProcessId);
 	void AddLog(LPCTSTR szFormat, ...);
