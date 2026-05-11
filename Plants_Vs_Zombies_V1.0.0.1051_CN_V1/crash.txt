@@ -1,0 +1,26 @@
+Exception: Privileged Instruction (code 0xc0000096) at address 0041D907 in thread 484C
+Module: PlantsVsZombies_后台.exe
+Logical Address: 0001:0001C907
+
+001AF990 0041D907 0001:0001C907 PlantsVsZombies_后台.exe
+Params: 147057E8 00000004 000000F0 000001CC
+
+
+EAX:FFFFFFFD EBX:1483B638 ECX:000003FF EDX:00000000 ESI:1483B638 EDI:001AF980
+EIP:0041D907 ESP:001AF968  EBP:001AF990
+CS:0023 SS:002B DS:002B ES:002B FS:0053 GS:002B
+Flags:00010A07
+
+Windows Ver: NT 6.2  Build 9200
+DDraw Ver: 
+DSound Ver: 
+
+Product: PlantsVsZombies
+Version: 1.0.0.1051
+Time Loaded: 00:38:22
+Fullscreen: 否
+Primary ThreadId: 484C
+Times Played: 0
+Build Num: 0
+Build Date: 
+

@@ -9,6 +9,7 @@
 #include "afxdialogex.h"
 #include "atlimage.h"
 #include <TlHelp32.h>
+#include "CProcessSelectDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -75,6 +76,7 @@ CPlantsCEDlg::~CPlantsCEDlg()
 void CPlantsCEDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+    DDX_Control(pDX, IDC_BTNSelPicture, m_btnSelPicture);
 	DDX_Control(pDX, IDC_PictureShow, m_PictureShow);
 	DDX_Control(pDX, IDC_SunBaseValue, m_editSunBaseValue);
 	DDX_Control(pDX, IDC_AttachProcess, m_btnAttachProcess);
@@ -178,6 +180,10 @@ BOOL CPlantsCEDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	// TODO: 在此添加额外的初始化代码
+    
+    // 隐藏图片选择路径
+    m_btnSelPicture.ShowWindow(SW_HIDE);
+
     // 获取INI文件路径（程序所在目录）
     TCHAR szPath[MAX_PATH];
     GetModuleFileName(NULL, szPath, MAX_PATH);
@@ -2597,41 +2603,23 @@ void CPlantsCEDlg::OnBnClickedSelectprocess()
         return;
     }
 
-    // 打开文件选择对话框
-    CFileDialog fileDlg(
-        TRUE,                           // TRUE = 打开文件对话框
-        _T("exe"),                      // 默认扩展名
-        NULL,                           // 默认文件名
-        OFN_FILEMUSTEXIST | OFN_HIDEREADONLY,  // 标志
-        _T("可执行文件 (*.exe)|*.exe|所有文件 (*.*)|*.*||"),  // 文件过滤器
-        this
-    );
+    // 打开进程选择对话框
+    CProcessSelectDlg dlg;
 
-    // 设置初始目录为当前目录
-    fileDlg.m_ofn.lpstrInitialDir = _T(".\\");
-
-    if (fileDlg.DoModal() == IDOK)
+    if (dlg.DoModal() == IDOK)
     {
-        CString strFilePath = fileDlg.GetPathName();
-        CString strFileName = fileDlg.GetFileName();
+        CString strProcessName = dlg.GetSelectedProcessName();
+        DWORD dwPID = dlg.GetSelectedProcessID();
 
-        AddLog(_T("[选择进程] 选择的文件: %s"), strFileName);
-        AddLog(_T("[选择进程] 完整路径: %s"), strFilePath);
+        AddLog(_T("[选择进程] 已选择进程: %s (PID: %d)"), strProcessName, dwPID);
 
-        // 只保存文件名（不含路径）
-        m_strProcessName = strFileName;
+        // 保存进程名称和PID
+        m_strProcessName = strProcessName;
+        m_dwProcessId = dwPID;
 
-        AddLog(_T("[选择进程] 当前目标进程: %s"), m_strProcessName);
-
-        // 重置地址
-        m_dwNoPlantCDAddress = 0;
-        m_dwAutoFastSunAddress = 0;
-        m_dwAutoCollectSunAddress = 0;
-        m_dwFastShootAddress = 0;
-
-        // 更新按钮文字显示当前进程
+        // 更新按钮文字
         CString strBtnText;
-        strBtnText.Format(_T("[%s]"), m_strProcessName);
+        strBtnText.Format(_T("选择进程 [%s]"), m_strProcessName);
         m_btnSelectProcess.SetWindowText(strBtnText);
 
         // 保存配置

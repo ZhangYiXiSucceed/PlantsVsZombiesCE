@@ -212,6 +212,8 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 public:
+
+	CButton m_btnSelPicture;
 	CStatic m_PictureShow;
 	void ShowBackgroundPicture(CString m_JpgPathName);
 	afx_msg void OnStnClickedPictureshow();
