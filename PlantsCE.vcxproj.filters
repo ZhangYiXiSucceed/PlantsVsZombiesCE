@@ -44,10 +44,13 @@
     <ClCompile Include="PlantsCEDlg.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="CProcessSelectDlg.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="CProcessSelectDlg.cpp">
+    <ClCompile Include="CheatEngine.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

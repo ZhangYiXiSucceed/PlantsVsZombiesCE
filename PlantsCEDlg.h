@@ -4,6 +4,10 @@
 
 #pragma once
 #include "afxwin.h"
+#include "CheatEngine.h"
+
+// 前向声明
+class CCheatEngine;
 
 // 在类定义末尾添加常量
 #define INI_FILENAME _T("PlantsCE.ini")
@@ -73,6 +77,10 @@ protected:
 	SunlightAddress m_sunlightAddr;  // 阳光地址结构
 	
 	CString m_strIniPath;                // INI配置文件路径
+	DWORD_PTR m_dwModuleBase;           // 模块基址
+
+	// CheatEngine实例
+	CCheatEngine* m_pCheatEngine;
 
 	// 控件变量
 	CEdit m_editSunBaseValue;     // 阳光值显示编辑框
@@ -212,6 +220,17 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 public:
+	// ==================== CheatItem定义（重构核心） ====================
+	CheatItem m_cheatAutoFastSun;
+	CheatItem m_cheatAutoCollectSun;
+	CheatItem m_cheatFastShoot;
+	CheatItem m_cheatZombiesAllOut;
+	CheatItem m_cheatPotatoMineNoCD;
+	CheatItem m_cheatChomperNoCD;
+	CheatItem m_cheatPlantInfiniteHP;
+	CheatItem m_cheatIceMushroomFreeze;
+	CheatItem m_cheatRepeatPlant;
+	CheatItem m_cheatSunMaxValue;
 
 	CButton m_btnSelPicture;
 	CStatic m_PictureShow;
@@ -224,6 +243,8 @@ public:
 	CString m_strCurrentImagePath;            // 保存当前图片路径
 	void DrawPictureToControl();              // 新增：实际的绘制函数
 	// 辅助函数
+	void InitCheatItems();                   // 初始化CheatItem定义
+	afx_msg void OnBnClickedCheatItem(UINT nID);  // 统一的修改器按钮处理
 	BOOL FindProcessId(LPCTSTR szProcessName, DWORD& dwProcessId);
 	void AddLog(LPCTSTR szFormat, ...);
 	DWORD_PTR ReadPointerChain(DWORD_PTR baseAddress, DWORD_PTR offset1, DWORD_PTR offset2);

@@ -10,6 +10,7 @@
 #include "atlimage.h"
 #include <TlHelp32.h>
 #include "CProcessSelectDlg.h"
+#include "CheatEngine.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -55,6 +56,8 @@ CPlantsCEDlg::CPlantsCEDlg(CWnd* pParent /*=nullptr*/)
 	, m_hProcess(NULL)
 	, m_dwProcessId(0)
 	, m_bAttached(FALSE)
+	, m_pCheatEngine(nullptr)
+	, m_dwModuleBase(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	// 初始化阳光地址结构
@@ -66,6 +69,11 @@ CPlantsCEDlg::CPlantsCEDlg(CWnd* pParent /*=nullptr*/)
 
 CPlantsCEDlg::~CPlantsCEDlg()
 {
+	if (m_pCheatEngine)
+	{
+		delete m_pCheatEngine;
+		m_pCheatEngine = nullptr;
+	}
 	if (m_hProcess)
 	{
 		CloseHandle(m_hProcess);
@@ -671,6 +679,150 @@ void CPlantsCEDlg::LoadConfigFromIni()
     AddLog(_T("  进程名称: %s"), m_strProcessName);
 }
 
+// 初始化CheatItem定义
+void CPlantsCEDlg::InitCheatItems()
+{
+    // 自动快速阳光
+    m_cheatAutoFastSun = {
+        "自动快速阳光",
+        AUTO_FAST_SUN_OFFSET,
+        HookType::JMP_HOOK,
+        AUTO_FAST_SUN_ORIGINAL_BYTES, sizeof(AUTO_FAST_SUN_ORIGINAL_BYTES),
+        AUTO_FAST_SUN_NEW_CODE, sizeof(AUTO_FAST_SUN_NEW_CODE),
+        5, 5,
+        &m_bAutoFastSunEnabled,
+        &m_dwAutoFastSunAddress,
+        &m_dwAutoFastSunAllocated,
+        &m_bAutoFastSunMemoryAllocated
+    };
+
+    // 自动收集阳光
+    m_cheatAutoCollectSun = {
+        "自动收集阳光",
+        AUTO_COLLECT_SUN_OFFSET,
+        HookType::JMP_HOOK,
+        AUTO_COLLECT_SUN_ORIGINAL_BYTES, sizeof(AUTO_COLLECT_SUN_ORIGINAL_BYTES),
+        AUTO_COLLECT_SUN_NEW_CODE, sizeof(AUTO_COLLECT_SUN_NEW_CODE),
+        5, 5,
+        &m_bAutoCollectSunEnabled,
+        &m_dwAutoCollectSunAddress,
+        &m_dwAutoCollectSunAllocated,
+        &m_bAutoCollectSunMemoryAllocated
+    };
+
+    // 快速发射 - NOP替换
+    m_cheatFastShoot = {
+        "快速发射",
+        FAST_SHOOT_OFFSET,
+        HookType::NOP_REPLACE,
+        FAST_SHOOT_ORIGINAL_BYTES, sizeof(FAST_SHOOT_ORIGINAL_BYTES),
+        nullptr, 0,
+        6, 6,
+        &m_bFastShootEnabled,
+        &m_dwFastShootAddress,
+        &m_dwFastShootAllocated,
+        &m_bFastShootMemoryAllocated
+    };
+
+    // 僵尸全部出动
+    m_cheatZombiesAllOut = {
+        "僵尸全部出动",
+        ZOMBIES_ALL_OUT_OFFSET,
+        HookType::JMP_HOOK,
+        ZOMBIES_ALL_OUT_ORIGINAL_BYTES, sizeof(ZOMBIES_ALL_OUT_ORIGINAL_BYTES),
+        ZOMBIES_ALL_OUT_NEW_CODE, sizeof(ZOMBIES_ALL_OUT_NEW_CODE),
+        5, 7,
+        &m_bZombiesAllOutEnabled,
+        &m_dwZombiesAllOutAddress,
+        &m_dwZombiesAllOutAllocated,
+        &m_bZombiesAllOutMemoryAllocated
+    };
+
+    // 土豆地雷无CD
+    m_cheatPotatoMineNoCD = {
+        "土豆地雷无CD",
+        POTATO_MINE_NO_CD_OFFSET,
+        HookType::NOP_REPLACE,
+        POTATO_MINE_NO_CD_ORIGINAL_BYTES, sizeof(POTATO_MINE_NO_CD_ORIGINAL_BYTES),
+        nullptr, 0,
+        6, 6,
+        &m_bPotatoMineNoCDEnabled,
+        &m_dwPotatoMineNoCDAddress,
+        &m_dwPotatoMineNoCDAllocated,
+        &m_bPotatoMineNoCDMemoryAllocated
+    };
+
+    // 食人花无CD
+    m_cheatChomperNoCD = {
+        "食人花无CD",
+        CHOMPER_NO_CD_OFFSET,
+        HookType::NOP_REPLACE,
+        CHOMPER_NO_CD_ORIGINAL_BYTES, sizeof(CHOMPER_NO_CD_ORIGINAL_BYTES),
+        nullptr, 0,
+        5, 5,
+        &m_bChomperNoCDEnabled,
+        &m_dwChomperNoCDAddress,
+        &m_dwChomperNoCDAllocated,
+        &m_bChomperNoCDMemoryAllocated
+    };
+
+    // 植物无限血
+    m_cheatPlantInfiniteHP = {
+        "植物无限血",
+        PLANT_INFINITE_HP_OFFSET,
+        HookType::JMP_HOOK,
+        PLANT_INFINITE_HP_ORIGINAL_BYTES, sizeof(PLANT_INFINITE_HP_ORIGINAL_BYTES),
+        PLANT_INFINITE_HP_NEW_CODE, sizeof(PLANT_INFINITE_HP_NEW_CODE),
+        7, 7,
+        &m_bPlantInfiniteHPEnabled,
+        &m_dwPlantInfiniteHPAddress,
+        &m_dwPlantInfiniteHPAllocated,
+        &m_bPlantInfiniteHPMemoryAllocated
+    };
+
+    // 寒冰菇一直冰冻
+    m_cheatIceMushroomFreeze = {
+        "寒冰菇一直冰冻",
+        ICE_MUSHROOM_FREEZE_OFFSET,
+        HookType::NOP_REPLACE,
+        nullptr, 0,
+        nullptr, 0,
+        0, 0,
+        &m_bIceMushroomFreezeEnabled,
+        &m_dwIceMushroomFreezeAddress,
+        &m_dwIceMushroomFreezeAllocated,
+        &m_bIceMushroomFreezeMemoryAllocated
+    };
+
+    // 重复种植
+    m_cheatRepeatPlant = {
+        "重复种植",
+        REPEAT_PLANT_OFFSET,
+        HookType::NOP_REPLACE,
+        nullptr, 0,
+        nullptr, 0,
+        0, 0,
+        &m_bRepeatPlantEnabled,
+        &m_dwRepeatPlantAddress,
+        &m_dwRepeatPlantAllocated,
+        &m_bRepeatPlantMemoryAllocated
+    };
+
+    // 阳光最大值
+    m_cheatSunMaxValue = {
+        "阳光最大值",
+        SUN_MAX_VALUE_OFFSET,
+        HookType::NOP_REPLACE,
+        nullptr, 0,
+        nullptr, 0,
+        0, 0,
+        &m_bSunMaxValueEnabled,
+        &m_dwSunMaxValueAddress,
+        &m_dwSunMaxValueAllocated,
+        &m_bSunMaxValueMemoryAllocated
+    };
+}
+
 // 根据配置应用所有修改功能（附加进程后调用）
 void CPlantsCEDlg::ApplyAllCheatsFromConfig()
 {
@@ -1042,14 +1194,23 @@ void CPlantsCEDlg::OnBnClickedAttachprocess()
         ApplyAllCheatsFromConfig();
 
         // 获取模块基址并显示初始值功能地址
-        DWORD_PTR dwModuleBase = GetModuleBaseAddress();
-        if (dwModuleBase)
+        m_dwModuleBase = GetModuleBaseAddress();
+        if (m_dwModuleBase)
         {
-            m_dwTargetAddress = dwModuleBase + TARGET_INIT_VALUE_OFFSET;
+            // 创建CheatEngine实例
+            if (m_pCheatEngine)
+                delete m_pCheatEngine;
+            m_pCheatEngine = new CCheatEngine(m_hProcess, &m_listLog);
+            m_pCheatEngine->SetModuleBase(m_dwModuleBase);
+
+            // 初始化CheatItem定义
+            InitCheatItems();
+
+            m_dwTargetAddress = m_dwModuleBase + TARGET_INIT_VALUE_OFFSET;
             AddLog(_T("[初始值10000] 目标地址: 0x%08X"), m_dwTargetAddress);
 
             // 无CD功能地址
-            m_dwNoPlantCDAddress = dwModuleBase + NO_PLANT_CD_OFFSET;
+            m_dwNoPlantCDAddress = m_dwModuleBase + NO_PLANT_CD_OFFSET;
             AddLog(_T("[无CD功能] 目标地址: 0x%08X"), m_dwNoPlantCDAddress);
         }
 
@@ -5608,3 +5769,71 @@ void CPlantsCEDlg::OnBnClickedSunvaluemax()
     // 保存配置
     SaveConfigToIni();
 }
+
+// 统一的修改器按钮处理函数
+void CPlantsCEDlg::OnBnClickedCheatItem(UINT nID)
+{
+    if (!m_bAttached || !m_hProcess)
+    {
+        AddLog(_T("错误: 请先附加进程"));
+        return;
+    }
+
+    // 根据控件ID找到对应的CheatItem
+    CheatItem* pItem = nullptr;
+    CButton* pCheck = nullptr;
+
+    switch (nID)
+    {
+    case IDC_AutoSunProduce:
+        pItem = &m_cheatAutoFastSun;
+        pCheck = &m_checkAutoFastSun;
+        break;
+    case IDC_AutoCollectSun:
+        pItem = &m_cheatAutoCollectSun;
+        pCheck = &m_checkAutoCollectSun;
+        break;
+    case IDC_FastShoot:
+        pItem = &m_cheatFastShoot;
+        pCheck = &m_checkFastShoot;
+        break;
+    case IDC_ZombiesALLGo:
+        pItem = &m_cheatZombiesAllOut;
+        pCheck = &m_checkZombiesAllOut;
+        break;
+    case IDC_PotatoMineNoCD:
+        pItem = &m_cheatPotatoMineNoCD;
+        pCheck = &m_checkPotatoMineNoCD;
+        break;
+    case IDC_EatZombiesNoCD:
+        pItem = &m_cheatChomperNoCD;
+        pCheck = &m_checkChomperNoCD;
+        break;
+    case IDC_PlantInfiniteHP:
+        pItem = &m_cheatPlantInfiniteHP;
+        pCheck = &m_checkPlantInfiniteHP;
+        break;
+    case IDC_MushroomFrozen:
+        pItem = &m_cheatIceMushroomFreeze;
+        pCheck = &m_checkIceMushroomFreeze;
+        break;
+    case IDC_RepeatPlants:
+        pItem = &m_cheatRepeatPlant;
+        pCheck = &m_checkRepeatPlant;
+        break;
+    case IDC_SunValueMax:
+        pItem = &m_cheatSunMaxValue;
+        pCheck = &m_checkSunMaxValue;
+        break;
+    default:
+        return;
+    }
+
+    if (pItem && pCheck)
+    {
+        BOOL bEnable = (pCheck->GetCheck() == BST_CHECKED);
+        m_pCheatEngine->ToggleCheatItem(*pItem, bEnable);
+        SaveConfigToIni();
+    }
+}
+
